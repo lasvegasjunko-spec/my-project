@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>診療メモ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, 'Hiragino Sans', sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1565c0;
+      color: white;
+      padding: 16px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .tabs {
+      display: flex;
+      background: #1976d2;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 14px 8px;
+      text-align: center;
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      font-size: 15px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      color: white;
+      border-bottom-color: #fff176;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .page { display: none; padding: 16px; }
+    .page.active { display: block; }
+
+    .form-group { margin-bottom: 16px; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #455a64;
+      letter-spacing: 0.5px;
+    }
+
+    select, input[type="text"], textarea {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1.5px solid #cfd8dc;
+      border-radius: 10px;
+      font-size: 16px;
+      background: white;
+      color: #212121;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: border-color 0.2s;
+    }
+
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: #1976d2;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%23607d8b'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    textarea {
+      height: 130px;
+      resize: none;
+      line-height: 1.6;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.98); opacity: 0.85; }
+
+    .btn-save {
+      background: #1565c0;
+      color: white;
+      margin-top: 4px;
+    }
+
+    .btn-mic {
+      background: #43a047;
+      color: white;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-mic.recording {
+      background: #e53935;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+
+    .btn-search {
+      background: #1565c0;
+      color: white;
+      padding: 13px 20px;
+      width: auto;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      align-items: stretch;
+    }
+
+    .search-row input {
+      flex: 1;
+    }
+
+    .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      border-left: 4px solid #1976d2;
+    }
+
+    .result-meta {
+      font-size: 12px;
+      color: #90a4ae;
+      margin-bottom: 4px;
+    }
+
+    .result-patient {
+      font-size: 16px;
+      font-weight: bold;
+      color: #1a237e;
+      margin-bottom: 8px;
+    }
+
+    .result-memo {
+      font-size: 14px;
+      color: #37474f;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .empty-msg {
+      text-align: center;
+      color: #90a4ae;
+      padding: 40px 0;
+      font-size: 15px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #323232;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      white-space: nowrap;
+      z-index: 999;
+    }
+
+    .toast.show { opacity: 1; }
+
+    .loading {
+      text-align: center;
+      color: #90a4ae;
+      padding: 20px;
+    }
+
+    .mic-hint {
+      font-size: 12px;
+      color: #90a4ae;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>🦷 診療メモ</header>
+
+<div class="tabs">
+  <div class="tab active" id="tab-input" onclick="switchTab('input')">📝 メモ入力</div>
+  <div class="tab" id="tab-search" onclick="switchTab('search')">🔍 患者検索</div>
+</div>
+
+<!-- メモ入力ページ -->
+<div class="page active" id="page-input">
+
+  <div class="form-group">
+    <label>院名</label>
+    <select id="clinic">
+      <option value="">選択してください</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>患者名</label>
+    <input type="text" id="patient" placeholder="例：田中 花子">
+  </div>
+
+  <div class="form-group">
+    <label>メモ内容</label>
+    <button class="btn btn-mic" id="micBtn" onclick="toggleVoice()">
+      <span id="micIcon">🎤</span>
+      <span id="micLabel">音声入力を開始</span>
+    </button>
+    <p class="mic-hint">または、下のテキストエリアに直接入力できます</p>
+    <textarea id="memo-text" placeholder="例：上顎右側 0.016 NiTi 痛みなし&#10;次回4週後、ワイヤー交換予定"></textarea>
+  </div>
+
+  <button class="btn btn-save" onclick="saveMemo()">💾 保存する</button>
+</div>
+
+<!-- 検索ページ -->
+<div class="page" id="page-search">
+  <div class="search-row">
+    <input type="text" id="searchQuery" placeholder="患者名・院名・メモで検索">
+    <button class="btn btn-search" onclick="doSearch()">検索</button>
+  </div>
+  <div id="searchResults"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let recognition = null;
+  let isRecording = false;
+  let finalTranscript = '';
+
+  // 院名リストを読み込む
+  google.script.run
+    .withSuccessHandler(function(clinics) {
+      const select = document.getElementById('clinic');
+      clinics.forEach(function(name) {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+    })
+    .getClinics();
+
+  function switchTab(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  function toggleVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      showToast('キーボードの🎤ボタンをご利用ください');
+      document.getElementById('memo-text').focus();
+      return;
+    }
+
+    if (isRecording) {
+      recognition.stop();
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ja-JP';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    const textarea = document.getElementById('memo-text');
+    finalTranscript = textarea.value;
+
+    recognition.onstart = function() {
+      isRecording = true;
+      document.getElementById('micBtn').classList.add('recording');
+      document.getElementById('micIcon').textContent = '⏹';
+      document.getElementById('micLabel').textContent = '停止する（話し終わったらタップ）';
+    };
+
+    recognition.onresult = function(e) {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          finalTranscript += e.results[i][0].transcript;
+        } else {
+          interim += e.results[i][0].transcript;
+        }
+      }
+      textarea.value = finalTranscript + interim;
+    };
+
+    recognition.onerror = function(e) {
+      showToast('音声認識エラー：キーボードの🎤をお使いください');
+    };
+
+    recognition.onend = function() {
+      isRecording = false;
+      document.getElementById('micBtn').classList.remove('recording');
+      document.getElementById('micIcon').textContent = '🎤';
+      document.getElementById('micLabel').textContent = '音声入力を開始';
+      textarea.value = finalTranscript;
+    };
+
+    recognition.start();
+  }
+
+  function saveMemo() {
+    const clinic = document.getElementById('clinic').value;
+    const patient = document.getElementById('patient').value.trim();
+    const memo = document.getElementById('memo-text').value.trim();
+
+    if (!clinic) { showToast('⚠️ 院名を選択してください'); return; }
+    if (!patient) { showToast('⚠️ 患者名を入力してください'); return; }
+    if (!memo) { showToast('⚠️ メモを入力してください'); return; }
+
+    const btn = document.querySelector('.btn-save');
+    btn.textContent = '保存中...';
+    btn.disabled = true;
+
+    google.script.run
+      .withSuccessHandler(function() {
+        showToast('✓ 保存しました');
+        document.getElementById('patient').value = '';
+        document.getElementById('memo-text').value = '';
+        finalTranscript = '';
+        btn.textContent = '💾 保存する';
+        btn.disabled = false;
+      })
+      .withFailureHandler(function() {
+        showToast('❌ 保存に失敗しました');
+        btn.textContent = '💾 保存する';
+        btn.disabled = false;
+      })
+      .saveMemo({ clinic: clinic, patient: patient, memo: memo });
+  }
+
+  function doSearch() {
+    const query = document.getElementById('searchQuery').value.trim();
+    const resultsDiv = document.getElementById('searchResults');
+
+    if (!query) {
+      resultsDiv.innerHTML = '<p class="empty-msg">検索ワードを入力してください</p>';
+      return;
+    }
+
+    resultsDiv.innerHTML = '<p class="loading">検索中...</p>';
+
+    google.script.run
+      .withSuccessHandler(function(results) {
+        if (results.length === 0) {
+          resultsDiv.innerHTML = '<p class="empty-msg">「' + escapeHtml(query) + '」は見つかりませんでした</p>';
+          return;
+        }
+
+        resultsDiv.innerHTML = results.map(function(r) {
+          return '<div class="result-card">' +
+            '<div class="result-meta">' + escapeHtml(r.date) + ' ' + escapeHtml(r.time) + '　' + escapeHtml(r.clinic) + '</div>' +
+            '<div class="result-patient">👤 ' + escapeHtml(r.patient) + '</div>' +
+            '<div class="result-memo">' + escapeHtml(r.memo) + '</div>' +
+            '</div>';
+        }).join('');
+      })
+      .withFailureHandler(function() {
+        resultsDiv.innerHTML = '<p class="empty-msg">エラーが発生しました</p>';
+      })
+      .searchMemos(query);
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 2500);
+  }
+
+  document.getElementById('searchQuery').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') doSearch();
+  });
+</script>
+</body>
+</html>
