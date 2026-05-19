@@ -334,39 +334,55 @@ export function HoldingsTable({ holdings, transactions }: HoldingsTableProps) {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase">日付</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase">銘柄</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase">種別</th>
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">約定日</th>
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase">コード</th>
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase">銘柄名</th>
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase">証券会社</th>
                 <th className="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase">数量</th>
                 <th className="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase">単価</th>
-                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase">合計</th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase">メモ</th>
+                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">購入額</th>
+                <th className="px-3 py-3 w-10" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {transactions.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">取引履歴がありません。</td>
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-400 text-sm">取引履歴がありません。</td>
                 </tr>
               )}
-              {[...transactions].sort((a, b) => b.date.localeCompare(a.date)).map(tx => (
-                <tr key={tx.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-3 text-gray-600 whitespace-nowrap">{formatDate(tx.date)}</td>
-                  <td className="px-3 py-3">
-                    <div className="font-medium text-gray-900">{tx.stockCode}</div>
-                    <div className="text-xs text-gray-500">{tx.stockName}</div>
-                  </td>
-                  <td className="px-3 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${tx.type === 'buy' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {tx.type === 'buy' ? '買い' : '売り'}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3 text-right text-gray-800">{formatNumber(tx.quantity)}</td>
-                  <td className="px-3 py-3 text-right text-gray-800">{formatCurrency(tx.price)}</td>
-                  <td className="px-3 py-3 text-right font-medium text-gray-900">{formatCurrency(tx.quantity * tx.price)}</td>
-                  <td className="px-3 py-3 text-gray-500 text-xs max-w-32 truncate">{tx.memo ?? '—'}</td>
-                </tr>
-              ))}
+              {[...transactions].sort((a, b) => b.date.localeCompare(a.date)).map(tx => {
+                const isDemo = tx.id.startsWith('demo-');
+                return (
+                  <tr key={tx.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-3 text-gray-600 whitespace-nowrap">{formatDate(tx.date)}</td>
+                    <td className="px-3 py-3 font-medium text-gray-900">{tx.stockCode}</td>
+                    <td className="px-3 py-3 text-gray-800">{tx.stockName}</td>
+                    <td className="px-3 py-3">
+                      {tx.brokerage ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                          {tx.brokerage}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-right text-gray-800">{formatNumber(tx.quantity)}</td>
+                    <td className="px-3 py-3 text-right text-gray-800">{formatCurrency(tx.price)}</td>
+                    <td className="px-3 py-3 text-right font-medium text-gray-900">{formatCurrency(tx.quantity * tx.price)}</td>
+                    <td className="px-3 py-3 text-center">
+                      {!isDemo && (
+                        <button
+                          onClick={() => dispatch({ type: 'DELETE_TRANSACTION', payload: tx.id })}
+                          className="p-1 text-gray-300 hover:text-red-500 transition-colors rounded"
+                          title="削除"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import type { Transaction, Sector } from '../types';
-import { ALL_SECTORS } from '../types';
+import { ALL_SECTORS, BROKERAGES } from '../types';
 
 interface AddTransactionModalProps {
   onClose: () => void;
@@ -21,6 +21,7 @@ const defaultForm = {
   price: '',
   date: new Date().toISOString().slice(0, 10),
   dividendPerShare: '',
+  brokerage: 'SBI',
   memo: '',
 };
 
@@ -61,6 +62,7 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
       price: Number(form.price),
       date: form.date,
       dividendPerShare: Number(form.dividendPerShare),
+      brokerage: form.brokerage || undefined,
       memo: form.memo.trim() || undefined,
     };
 
@@ -148,19 +150,34 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
             </div>
           </div>
 
-          {/* 業種 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">業種</label>
-            <select
-              name="sector"
-              value={form.sector}
-              onChange={handleChange}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition"
-            >
-              {ALL_SECTORS.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+          {/* 業種 + 証券会社 */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">業種</label>
+              <select
+                name="sector"
+                value={form.sector}
+                onChange={handleChange}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition"
+              >
+                {ALL_SECTORS.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">証券会社</label>
+              <select
+                name="brokerage"
+                value={form.brokerage}
+                onChange={handleChange}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition"
+              >
+                {BROKERAGES.map(b => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Row: quantity + price */}

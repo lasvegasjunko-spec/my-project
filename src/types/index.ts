@@ -27,8 +27,11 @@ export interface Transaction {
   price: number;
   date: string;
   dividendPerShare: number;
+  brokerage?: string;
   memo?: string;
 }
+
+export const BROKERAGES = ['SBI', '楽天', 'マネックス', '松井', 'auカブコム', 'その他'] as const;
 
 export interface Holding {
   stockCode: string;

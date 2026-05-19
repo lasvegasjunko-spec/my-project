@@ -11,7 +11,7 @@ export const demoTransactions: Transaction[] = [
     price: 3917,
     date: '2022-04-10',
     dividendPerShare: 395,
-    memo: 'デモデータ',
+    brokerage: 'SBI',
   },
   {
     id: 'demo-2',
@@ -23,7 +23,7 @@ export const demoTransactions: Transaction[] = [
     price: 3250,
     date: '2022-06-15',
     dividendPerShare: 300,
-    memo: 'デモデータ',
+    brokerage: 'SBI',
   },
   {
     id: 'demo-3',
@@ -35,7 +35,7 @@ export const demoTransactions: Transaction[] = [
     price: 8750,
     date: '2022-09-20',
     dividendPerShare: 890,
-    memo: 'デモデータ',
+    brokerage: '楽天',
   },
   {
     id: 'demo-4',
@@ -47,7 +47,7 @@ export const demoTransactions: Transaction[] = [
     price: 3025,
     date: '2021-11-05',
     dividendPerShare: 172,
-    memo: 'デモデータ',
+    brokerage: 'SBI',
   },
   {
     id: 'demo-5',
@@ -59,7 +59,7 @@ export const demoTransactions: Transaction[] = [
     price: 5600,
     date: '2023-02-14',
     dividendPerShare: 370,
-    memo: 'デモデータ',
+    brokerage: '楽天',
   },
   {
     id: 'demo-6',
@@ -71,7 +71,7 @@ export const demoTransactions: Transaction[] = [
     price: 3500,
     date: '2022-08-22',
     dividendPerShare: 250,
-    memo: 'デモデータ',
+    brokerage: 'SBI',
   },
   {
     id: 'demo-7',
@@ -83,7 +83,7 @@ export const demoTransactions: Transaction[] = [
     price: 7500,
     date: '2023-05-10',
     dividendPerShare: 185,
-    memo: 'デモデータ',
+    brokerage: 'SBI',
   },
   {
     id: 'demo-8',
@@ -95,7 +95,7 @@ export const demoTransactions: Transaction[] = [
     price: 4350,
     date: '2021-07-30',
     dividendPerShare: 295,
-    memo: 'デモデータ',
+    brokerage: '楽天',
   },
   {
     id: 'demo-9',
@@ -107,7 +107,7 @@ export const demoTransactions: Transaction[] = [
     price: 4100,
     date: '2023-01-18',
     dividendPerShare: 260,
-    memo: 'デモデータ',
+    brokerage: 'SBI',
   },
 ];
 
