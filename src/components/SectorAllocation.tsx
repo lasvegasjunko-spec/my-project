@@ -1,4 +1,3 @@
-import React from 'react';
 import { SECTOR_COLORS } from '../types';
 import type { Holding, Sector } from '../types';
 

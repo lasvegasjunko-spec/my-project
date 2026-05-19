@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ArrowUp, ArrowDown, TrendingUp, TrendingDown } from 'lucide-react';
 import type { Holding } from '../types';
 import type { Transaction } from '../types';
 import { formatCurrency, formatNumber, formatPercent, formatPercentPlain, colorClass, formatDate } from '../utils/format';
 import { SECTOR_COLORS } from '../types';
 
-type SortKey = keyof Holding | 'pl' | 'plPct' | 'yieldMkt' | 'yieldCost';
+type SortKey = keyof Holding | 'pl' | 'plPct' | 'yieldMkt' | 'yieldCost' | 'marketValue' | 'annualDiv';
 type SortDir = 'asc' | 'desc';
 
 interface HoldingsTableProps {
