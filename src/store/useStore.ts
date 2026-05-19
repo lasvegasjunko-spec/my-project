@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import type { AppState, Transaction, WatchItem } from '../types';
+import type { AppState, Transaction, WatchItem, HoldingOverride } from '../types';
 import { demoTransactions, demoWatchlist, demoPrices } from '../data/demoData';
 import type { Holding } from '../types';
 
@@ -21,7 +21,7 @@ export function computeHoldings(transactions: Transaction[], isDemoMode: boolean
       if (existing) {
         existing.totalQty += tx.quantity;
         existing.totalCost += tx.quantity * tx.price;
-        existing.dividendPerShare = tx.dividendPerShare; // use latest
+        existing.dividendPerShare = tx.dividendPerShare;
       } else {
         map.set(tx.stockCode, {
           stockCode: tx.stockCode,
@@ -70,11 +70,13 @@ type Action =
   | { type: 'REMOVE_WATCH'; payload: string }
   | { type: 'SET_DEMO_MODE'; payload: boolean }
   | { type: 'CLEAR_DATA' }
-  | { type: 'LOAD_STATE'; payload: AppState };
+  | { type: 'LOAD_STATE'; payload: AppState }
+  | { type: 'UPDATE_HOLDING'; payload: { stockCode: string; overrides: HoldingOverride } };
 
 const initialState: AppState = {
   transactions: [],
   watchlist: [],
+  holdingOverrides: {},
   isDemoMode: true,
   currency: 'JPY',
 };
@@ -94,7 +96,18 @@ function reducer(state: AppState, action: Action): AppState {
     case 'CLEAR_DATA':
       return { ...initialState, isDemoMode: false };
     case 'LOAD_STATE':
-      return action.payload;
+      return { ...initialState, ...action.payload };
+    case 'UPDATE_HOLDING': {
+      const { stockCode, overrides } = action.payload;
+      const existing = state.holdingOverrides?.[stockCode] ?? {};
+      return {
+        ...state,
+        holdingOverrides: {
+          ...state.holdingOverrides,
+          [stockCode]: { ...existing, ...overrides },
+        },
+      };
+    }
     default:
       return state;
   }
@@ -146,7 +159,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     ? { ...state, watchlist: demoWatchlistActive }
     : state;
 
-  const holdings = computeHoldings(effectiveTransactions, state.isDemoMode);
+  const overrides = state.holdingOverrides ?? {};
+  const holdings = computeHoldings(effectiveTransactions, state.isDemoMode).map(h => {
+    const o = overrides[h.stockCode];
+    return o ? { ...h, ...o } : h;
+  });
 
   const value: StoreContextValue = {
     state: effectiveState,

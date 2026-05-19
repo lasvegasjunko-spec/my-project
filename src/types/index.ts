@@ -49,9 +49,12 @@ export interface WatchItem {
   dividendPerShare: number;
 }
 
+export type HoldingOverride = Partial<Pick<Holding, 'stockName' | 'sector' | 'quantity' | 'avgCost' | 'currentPrice' | 'dividendPerShare'>>;
+
 export interface AppState {
   transactions: Transaction[];
   watchlist: WatchItem[];
+  holdingOverrides: Record<string, HoldingOverride>;
   isDemoMode: boolean;
   currency: 'JPY';
 }
