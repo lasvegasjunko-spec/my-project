@@ -66,6 +66,7 @@ export function computeHoldings(transactions: Transaction[], isDemoMode: boolean
 type Action =
   | { type: 'ADD_TRANSACTION'; payload: Transaction }
   | { type: 'DELETE_TRANSACTION'; payload: string }
+  | { type: 'UPDATE_TRANSACTION'; payload: Partial<Transaction> & { id: string } }
   | { type: 'ADD_WATCH'; payload: WatchItem }
   | { type: 'REMOVE_WATCH'; payload: string }
   | { type: 'SET_DEMO_MODE'; payload: boolean }
@@ -87,6 +88,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, transactions: [...state.transactions, action.payload] };
     case 'DELETE_TRANSACTION':
       return { ...state, transactions: state.transactions.filter(t => t.id !== action.payload) };
+    case 'UPDATE_TRANSACTION':
+      return { ...state, transactions: state.transactions.map(t => t.id === action.payload.id ? { ...t, ...action.payload } : t) };
     case 'ADD_WATCH':
       return { ...state, watchlist: [...state.watchlist, action.payload] };
     case 'REMOVE_WATCH':
