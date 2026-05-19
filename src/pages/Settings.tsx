@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { ToggleLeft, ToggleRight, Trash2, Database, Shield, Info } from 'lucide-react';
+import { ToggleLeft, ToggleRight, Trash2, Database, Shield, Info, Download } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { exportHoldingsCsv, exportTransactionsCsv } from '../utils/exportCsv';
 
 export function Settings() {
-  const { state, dispatch } = useStore();
+  const { state, dispatch, holdings, effectiveTransactions } = useStore();
   const [showConfirm, setShowConfirm] = useState(false);
 
   function handleToggleDemo() {
@@ -71,6 +72,50 @@ export function Settings() {
             >
               <Trash2 size={15} />
               クリア
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* CSV Export */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <Download size={16} className="text-blue-500" />
+            CSVエクスポート
+          </h2>
+        </div>
+        <div className="divide-y divide-gray-100">
+          <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex-1 mr-4">
+              <div className="text-sm font-medium text-gray-900">保有銘柄をエクスポート</div>
+              <div className="text-xs text-gray-500 mt-0.5">
+                現在の保有銘柄・損益・配当情報をCSVファイルとして保存します
+              </div>
+            </div>
+            <button
+              onClick={() => exportHoldingsCsv(holdings)}
+              disabled={holdings.length === 0}
+              className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-200 text-blue-600 text-sm font-medium hover:bg-blue-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Download size={15} />
+              ダウンロード
+            </button>
+          </div>
+          <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex-1 mr-4">
+              <div className="text-sm font-medium text-gray-900">取引履歴をエクスポート</div>
+              <div className="text-xs text-gray-500 mt-0.5">
+                すべての取引記録をCSVファイルとして保存します
+              </div>
+            </div>
+            <button
+              onClick={() => exportTransactionsCsv(effectiveTransactions)}
+              disabled={effectiveTransactions.length === 0}
+              className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-200 text-blue-600 text-sm font-medium hover:bg-blue-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Download size={15} />
+              ダウンロード
             </button>
           </div>
         </div>
