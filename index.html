@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOIR HAIR STUDIO | Premium Hair Salon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ナビゲーション -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="#hero" class="nav-logo">NOIR<span>.</span></a>
+      <button class="nav-toggle" id="navToggle" aria-label="メニュー">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#about">ABOUT</a></li>
+        <li><a href="#services">SERVICES</a></li>
+        <li><a href="#gallery">GALLERY</a></li>
+        <li><a href="#recruit">RECRUIT</a></li>
+        <li><a href="#access">ACCESS</a></li>
+        <li><a href="#contact" class="nav-cta">予約する</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ヒーロー -->
+  <section id="hero">
+    <div class="hero-bg">
+      <div class="hero-gradient"></div>
+      <div class="hero-particles" id="particles"></div>
+    </div>
+    <div class="hero-content">
+      <p class="hero-sub reveal">PREMIUM HAIR SALON IN TOKYO</p>
+      <h1 class="hero-title reveal">
+        <span class="line">あなたの美しさを、</span>
+        <span class="line italic">アートへ。</span>
+      </h1>
+      <p class="hero-desc reveal">最先端のトレンドと洗練された技術で、<br>あなただけのスタイルを創り上げます。</p>
+      <div class="hero-btns reveal">
+        <a href="#contact" class="btn btn-primary">WEB予約</a>
+        <a href="#services" class="btn btn-outline">サービス一覧</a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <span>SCROLL</span>
+      <div class="scroll-line"></div>
+    </div>
+    <div class="hero-badge">
+      <div class="badge-inner">
+        <span>SINCE</span>
+        <strong>2020</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- ティッカー -->
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span>HAIR STYLING</span><span class="dot">✦</span>
+      <span>HAIR COLOR</span><span class="dot">✦</span>
+      <span>HAIR MAKEUP</span><span class="dot">✦</span>
+      <span>EYE LASH</span><span class="dot">✦</span>
+      <span>WELFARE BEAUTY</span><span class="dot">✦</span>
+      <span>HAIR STYLING</span><span class="dot">✦</span>
+      <span>HAIR COLOR</span><span class="dot">✦</span>
+      <span>HAIR MAKEUP</span><span class="dot">✦</span>
+      <span>EYE LASH</span><span class="dot">✦</span>
+      <span>WELFARE BEAUTY</span><span class="dot">✦</span>
+    </div>
+  </div>
+
+  <!-- オーナー紹介 -->
+  <section id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-img-wrap reveal-left">
+          <div class="about-img">
+            <div class="about-img-inner">
+              <div class="owner-avatar">
+                <div class="avatar-circle">
+                  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="avatarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#c9a96e"/>
+                        <stop offset="100%" style="stop-color:#f0d080"/>
+                      </linearGradient>
+                    </defs>
+                    <circle cx="100" cy="80" r="45" fill="url(#avatarGrad)" opacity="0.9"/>
+                    <ellipse cx="100" cy="165" rx="60" ry="40" fill="url(#avatarGrad)" opacity="0.7"/>
+                    <circle cx="100" cy="80" r="42" fill="none" stroke="#c9a96e" stroke-width="1" opacity="0.5"/>
+                  </svg>
+                </div>
+                <div class="scissors-icon">✂</div>
+              </div>
+            </div>
+            <div class="about-img-deco"></div>
+          </div>
+          <div class="about-stat-card">
+            <strong>5年以上</strong>
+            <span>の施術経験</span>
+          </div>
+        </div>
+        <div class="about-text reveal-right">
+          <p class="section-label">OWNER &amp; STYLIST</p>
+          <h2 class="section-title">カリスマ美容師<br><em>Ren Takahashi</em></h2>
+          <div class="owner-title-badge">HAIR SALON NOIR オーナー</div>
+          <p class="about-lead">「美容は、人を変える力がある。」</p>
+          <p class="about-body">
+            東京の一流サロンで技術を磨き、独立して<strong>NOIR HAIR STUDIO</strong>を設立。
+            ヘアスタイリングからアイラッシュまで、トータルビューティーを手がける実力派オーナースタイリスト。
+          </p>
+          <p class="about-body">
+            お客様一人ひとりの骨格・肌色・ライフスタイルを丁寧にカウンセリングし、
+            その人だけのベストスタイルを提案。次世代を担うカリスマとして、
+            雑誌・SNSでも注目を集めています。
+          </p>
+          <div class="about-awards">
+            <div class="award-item">
+              <span class="award-icon">🏆</span>
+              <div>
+                <strong>全日本ヘアスタイリスト選手権</strong>
+                <span>グランプリ受賞</span>
+              </div>
+            </div>
+            <div class="award-item">
+              <span class="award-icon">📰</span>
+              <div>
+                <strong>Hair Magazine掲載</strong>
+                <span>2022・2023・2024</span>
+              </div>
+            </div>
+            <div class="award-item">
+              <span class="award-icon">✨</span>
+              <div>
+                <strong>SNSフォロワー</strong>
+                <span>10万人突破</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- サービス -->
+  <section id="services">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">WHAT WE DO</p>
+        <h2 class="section-title">サービス一覧</h2>
+        <p class="section-desc">トータルビューティーをワンストップで。プロフェッショナルが全力でサポートします。</p>
+      </div>
+      <div class="services-grid">
+
+        <div class="service-card reveal" data-delay="0">
+          <div class="service-num">01</div>
+          <div class="service-icon-wrap">
+            <div class="service-icon">✂️</div>
+          </div>
+          <h3>ヘアスタイリスト</h3>
+          <p>トレンドを取り入れながら、お客様の個性を最大限に引き出すカット・スタイリングを提供。骨格診断からはじまるパーソナルなスタイル提案が強みです。</p>
+          <ul class="service-list">
+            <li>カット・シャンプー</li>
+            <li>パーマ・縮毛矯正</li>
+            <li>ヘアセット・アレンジ</li>
+            <li>ブライダルスタイリング</li>
+          </ul>
+          <div class="service-price">¥4,400〜</div>
+        </div>
+
+        <div class="service-card reveal" data-delay="100">
+          <div class="service-num">02</div>
+          <div class="service-icon-wrap">
+            <div class="service-icon">🎨</div>
+          </div>
+          <h3>ヘアカラーリスト</h3>
+          <p>ダメージを最小限に抑えながら、あなたの理想のカラーを実現。外国人風カラーからハイライト、バレイヤージュまで幅広く対応。</p>
+          <ul class="service-list">
+            <li>ファッションカラー</li>
+            <li>ハイライト・バレイヤージュ</li>
+            <li>インナーカラー</li>
+            <li>白髪染め・グレイカラー</li>
+          </ul>
+          <div class="service-price">¥7,700〜</div>
+        </div>
+
+        <div class="service-card reveal" data-delay="200">
+          <div class="service-num">03</div>
+          <div class="service-icon-wrap">
+            <div class="service-icon">💄</div>
+          </div>
+          <h3>ヘアメイクアップ<br>アーティスト</h3>
+          <p>ヘアとメイクを一体でプロデュース。撮影・成人式・結婚式など特別な日のトータルスタイリングをお任せください。</p>
+          <ul class="service-list">
+            <li>ブライダルヘアメイク</li>
+            <li>成人式・卒業式</li>
+            <li>撮影・雑誌ヘアメイク</li>
+            <li>パーティーメイク</li>
+          </ul>
+          <div class="service-price">¥15,000〜</div>
+        </div>
+
+        <div class="service-card reveal" data-delay="300">
+          <div class="service-num">04</div>
+          <div class="service-icon-wrap">
+            <div class="service-icon">👁️</div>
+          </div>
+          <h3>アイリスト</h3>
+          <p>目元の印象を劇的に変えるまつ毛エクステ・まつ毛パーマ専門施術。自まつ毛を活かした自然な仕上がりからゴージャスな仕上がりまで対応。</p>
+          <ul class="service-list">
+            <li>まつ毛エクステ（シングル）</li>
+            <li>まつ毛エクステ（ボリューム）</li>
+            <li>まつ毛パーマ・リフトアップ</li>
+            <li>まつ毛カラー</li>
+          </ul>
+          <div class="service-price">¥5,500〜</div>
+        </div>
+
+        <div class="service-card reveal featured-card" data-delay="400">
+          <div class="service-num">05</div>
+          <div class="featured-badge">SPECIAL</div>
+          <div class="service-icon-wrap">
+            <div class="service-icon">🚗</div>
+          </div>
+          <h3>訪問・福祉美容師</h3>
+          <p>ご自宅や介護施設へ美容師が出張します。外出が困難な方でも、美しくなる喜びをお届け。心に寄り添った丁寧な施術で、笑顔をサポートします。</p>
+          <ul class="service-list">
+            <li>自宅・施設への出張カット</li>
+            <li>シャンプー・ブロー</li>
+            <li>パーマ・カラー（出張）</li>
+            <li>車椅子対応・寝たきり対応</li>
+          </ul>
+          <div class="service-price">¥3,300〜<span class="price-note">（出張費別）</span></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ギャラリー -->
+  <section id="gallery">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">OUR WORKS</p>
+        <h2 class="section-title">ギャラリー</h2>
+      </div>
+      <div class="gallery-grid reveal">
+        <div class="gallery-item g-tall">
+          <div class="gallery-inner" style="background: linear-gradient(135deg,#1a1a2e,#16213e)">
+            <div class="gallery-label">HAIR COLOR</div>
+          </div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-inner" style="background: linear-gradient(135deg,#0f3460,#533483)">
+            <div class="gallery-label">CUT STYLE</div>
+          </div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-inner" style="background: linear-gradient(135deg,#533483,#e94560)">
+            <div class="gallery-label">HIGHLIGHT</div>
+          </div>
+        </div>
+        <div class="gallery-item g-wide">
+          <div class="gallery-inner" style="background: linear-gradient(135deg,#2d1b69,#11998e)">
+            <div class="gallery-label">BRIDAL MAKEUP</div>
+          </div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-inner" style="background: linear-gradient(135deg,#c9a96e,#8b6914)">
+            <div class="gallery-label">EYE LASH</div>
+          </div>
+        </div>
+      </div>
+      <div class="gallery-cta reveal">
+        <p>さらに多くの作品はInstagramでご覧いただけます。</p>
+        <a href="#" class="btn btn-outline-gold">Instagram を見る →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 数字で見るNOIR -->
+  <section id="numbers">
+    <div class="numbers-bg"></div>
+    <div class="container">
+      <div class="numbers-grid">
+        <div class="num-item reveal">
+          <strong class="num-val" data-target="3000">0</strong>
+          <span class="num-unit">+</span>
+          <p>月間施術数</p>
+        </div>
+        <div class="num-item reveal" data-delay="100">
+          <strong class="num-val" data-target="98">0</strong>
+          <span class="num-unit">%</span>
+          <p>顧客満足度</p>
+        </div>
+        <div class="num-item reveal" data-delay="200">
+          <strong class="num-val" data-target="5">0</strong>
+          <span class="num-unit">年</span>
+          <p>営業年数</p>
+        </div>
+        <div class="num-item reveal" data-delay="300">
+          <strong class="num-val" data-target="10">0</strong>
+          <span class="num-unit">万</span>
+          <p>SNSフォロワー</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- スタッフ募集 -->
+  <section id="recruit">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">JOIN US</p>
+        <h2 class="section-title">スタッフ募集</h2>
+        <p class="section-desc">一緒に、最高のサロンを作りましょう。</p>
+      </div>
+      <div class="recruit-hero reveal">
+        <div class="recruit-message">
+          <h3>"美容が好き"な<br>あなたを待っています。</h3>
+          <p>
+            NOIRは「人を輝かせる喜び」を大切にするサロンです。
+            技術はもちろん、スタッフ一人ひとりの個性と感性を尊重。
+            未経験・新卒から活躍できる環境と、しっかりとした育成プログラムで、
+            あなたをカリスマ美容師へと導きます。
+          </p>
+        </div>
+      </div>
+      <div class="recruit-positions">
+        <div class="position-card reveal">
+          <div class="position-tag">正社員</div>
+          <h4>スタイリスト</h4>
+          <div class="position-details">
+            <div class="pos-row"><span>応募資格</span><p>美容師免許取得者（経験不問）</p></div>
+            <div class="pos-row"><span>給与</span><p>月給 240,000円〜 ／ 歩合あり</p></div>
+            <div class="pos-row"><span>勤務時間</span><p>9:00〜19:00（シフト制）</p></div>
+            <div class="pos-row"><span>休日</span><p>週休2日制・年間休日115日</p></div>
+            <div class="pos-row"><span>福利厚生</span><p>社保完備・交通費支給・技術研修あり</p></div>
+          </div>
+          <a href="#contact" class="btn btn-primary btn-sm">この求人に応募する</a>
+        </div>
+        <div class="position-card reveal" data-delay="100">
+          <div class="position-tag">正社員</div>
+          <h4>アイリスト</h4>
+          <div class="position-details">
+            <div class="pos-row"><span>応募資格</span><p>美容師免許取得者（アイリスト経験歓迎）</p></div>
+            <div class="pos-row"><span>給与</span><p>月給 230,000円〜 ／ 歩合あり</p></div>
+            <div class="pos-row"><span>勤務時間</span><p>10:00〜20:00（シフト制）</p></div>
+            <div class="pos-row"><span>休日</span><p>週休2日制・年間休日115日</p></div>
+            <div class="pos-row"><span>福利厚生</span><p>社保完備・交通費支給・技術研修あり</p></div>
+          </div>
+          <a href="#contact" class="btn btn-primary btn-sm">この求人に応募する</a>
+        </div>
+        <div class="position-card reveal" data-delay="200">
+          <div class="position-tag">パート・アルバイト</div>
+          <h4>訪問美容スタッフ</h4>
+          <div class="position-details">
+            <div class="pos-row"><span>応募資格</span><p>美容師免許取得者・普通自動車免許（AT可）</p></div>
+            <div class="pos-row"><span>給与</span><p>時給 1,500円〜</p></div>
+            <div class="pos-row"><span>勤務時間</span><p>週2〜OK・フレキシブル対応</p></div>
+            <div class="pos-row"><span>休日</span><p>シフト制（相談可）</p></div>
+            <div class="pos-row"><span>福利厚生</span><p>交通費支給・制服貸与</p></div>
+          </div>
+          <a href="#contact" class="btn btn-primary btn-sm">この求人に応募する</a>
+        </div>
+      </div>
+      <div class="recruit-benefits reveal">
+        <h3>NOIRで働く魅力</h3>
+        <div class="benefits-grid">
+          <div class="benefit-item">
+            <span class="benefit-icon">📚</span>
+            <h5>充実の研修制度</h5>
+            <p>入社後6ヶ月間の丁寧な研修プログラムで安心してスキルアップ</p>
+          </div>
+          <div class="benefit-item">
+            <span class="benefit-icon">💰</span>
+            <h5>インセンティブ制度</h5>
+            <p>頑張った分だけ収入に反映。高い歩合率で実力を収入へ</p>
+          </div>
+          <div class="benefit-item">
+            <span class="benefit-icon">🌟</span>
+            <h5>SNS・メディア露出</h5>
+            <p>サロンのSNS・雑誌撮影への参加でセルフブランディングを支援</p>
+          </div>
+          <div class="benefit-item">
+            <span class="benefit-icon">🕐</span>
+            <h5>ワークライフバランス</h5>
+            <p>完全週休2日制。プライベートを大切にしながら働ける環境</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 予約・お問合せ -->
+  <section id="contact">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">RESERVATION</p>
+        <h2 class="section-title">ご予約・お問合せ</h2>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-info reveal-left">
+          <div class="contact-block">
+            <p class="contact-label">電話予約</p>
+            <a href="tel:0312345678" class="contact-phone">03-1234-5678</a>
+            <p class="contact-hours">受付時間 / 9:00〜18:00（定休日：火曜日）</p>
+          </div>
+          <div class="contact-block">
+            <p class="contact-label">営業時間</p>
+            <table class="hours-table">
+              <tr><td>月・水〜金</td><td>9:00 — 20:00</td></tr>
+              <tr><td>土・日・祝</td><td>8:00 — 19:00</td></tr>
+              <tr class="closed"><td>火曜日</td><td>定休日</td></tr>
+            </table>
+          </div>
+          <div class="contact-block">
+            <p class="contact-label">SNS / メール</p>
+            <div class="sns-links">
+              <a href="#" class="sns-btn">Instagram</a>
+              <a href="#" class="sns-btn">LINE予約</a>
+              <a href="mailto:info@noir-hair.jp" class="sns-btn">メール</a>
+            </div>
+          </div>
+        </div>
+        <form class="contact-form reveal-right" id="contactForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>お名前 <span class="req">必須</span></label>
+              <input type="text" placeholder="田中 花子" required />
+            </div>
+            <div class="form-group">
+              <label>電話番号 <span class="req">必須</span></label>
+              <input type="tel" placeholder="090-0000-0000" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>メールアドレス</label>
+            <input type="email" placeholder="example@email.com" />
+          </div>
+          <div class="form-group">
+            <label>ご希望のサービス</label>
+            <select>
+              <option value="">選択してください</option>
+              <option>ヘアスタイリング</option>
+              <option>ヘアカラー</option>
+              <option>ヘアメイク</option>
+              <option>アイリスト（まつ毛）</option>
+              <option>訪問・福祉美容</option>
+              <option>スタッフ応募</option>
+              <option>その他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>ご希望日時・メッセージ</label>
+            <textarea rows="4" placeholder="ご希望の日時やご要望をお書きください。"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">送信する</button>
+          <p class="form-note">通常2営業日以内にご返信いたします。</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- アクセス・Googleマップ -->
+  <section id="access">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">ACCESS</p>
+        <h2 class="section-title">アクセス</h2>
+      </div>
+      <div class="access-grid">
+        <div class="access-info reveal-left">
+          <div class="access-block">
+            <h4>NOIR HAIR STUDIO</h4>
+            <p class="address">〒150-0001<br>東京都渋谷区神宮前1-2-3<br>NOIRビル2F</p>
+          </div>
+          <div class="access-block">
+            <h4>アクセス方法</h4>
+            <ul class="access-list">
+              <li>
+                <span class="access-icon">🚉</span>
+                <div>
+                  <strong>東京メトロ 表参道駅</strong>
+                  <p>A2出口より徒歩3分</p>
+                </div>
+              </li>
+              <li>
+                <span class="access-icon">🚌</span>
+                <div>
+                  <strong>バス停「表参道」</strong>
+                  <p>徒歩2分</p>
+                </div>
+              </li>
+              <li>
+                <span class="access-icon">🅿️</span>
+                <div>
+                  <strong>近隣コインパーキング</strong>
+                  <p>徒歩5分圏内に複数あり</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="map-wrap reveal-right">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3241.594!2d139.7119!3d35.6654!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188ca1d86fce27%3A0x3af9dcc1c0fa26e2!2z6KW_5Y2X6Zmi!5e0!3m2!1sja!2sjp!4v1"
+            width="100%"
+            height="100%"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="NOIR HAIR STUDIO アクセスマップ">
+          </iframe>
+          <div class="map-overlay-btn">
+            <a href="https://maps.google.com/?q=表参道" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
+              Google マップで開く
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- フッター -->
+  <footer id="footer">
+    <div class="footer-top">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a href="#hero" class="footer-logo">NOIR<span>.</span></a>
+            <p>トータルビューティーサロン<br>東京・表参道</p>
+            <div class="footer-sns">
+              <a href="#" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              </a>
+              <a href="#" aria-label="Twitter/X">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+            </div>
+          </div>
+          <div class="footer-nav">
+            <h5>MENU</h5>
+            <ul>
+              <li><a href="#about">オーナーについて</a></li>
+              <li><a href="#services">サービス一覧</a></li>
+              <li><a href="#gallery">ギャラリー</a></li>
+              <li><a href="#recruit">スタッフ募集</a></li>
+              <li><a href="#access">アクセス</a></li>
+            </ul>
+          </div>
+          <div class="footer-nav">
+            <h5>SERVICES</h5>
+            <ul>
+              <li><a href="#services">ヘアスタイリスト</a></li>
+              <li><a href="#services">ヘアカラーリスト</a></li>
+              <li><a href="#services">ヘアメイクアップ</a></li>
+              <li><a href="#services">アイリスト</a></li>
+              <li><a href="#services">訪問・福祉美容</a></li>
+            </ul>
+          </div>
+          <div class="footer-contact">
+            <h5>CONTACT</h5>
+            <a href="tel:0312345678" class="footer-tel">03-1234-5678</a>
+            <p>〒150-0001<br>東京都渋谷区神宮前1-2-3</p>
+            <p class="footer-hours">営業時間 9:00〜20:00<br>（火曜定休）</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p>&copy; 2024 NOIR HAIR STUDIO. All Rights Reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="#">プライバシーポリシー</a>
+          <a href="#">特定商取引法に基づく表記</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- フローティング予約ボタン -->
+  <a href="#contact" class="float-btn" id="floatBtn">
+    <span>WEB予約</span>
+  </a>
+
+  <script src="script.js"></script>
+</body>
+</html>
