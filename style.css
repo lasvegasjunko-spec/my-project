@@ -908,7 +908,7 @@ section { padding: 100px 0; }
   border-radius: 2px;
 }
 
-/* アプリUIの×とハートを黒帯で隠す */
+/* アプリUIの×とハートを上部黒帯で隠す */
 .gallery-item::before {
   content: '';
   position: absolute;
@@ -916,6 +916,18 @@ section { padding: 100px 0; }
   left: 0;
   right: 0;
   height: 52px;
+  background: var(--dark);
+  z-index: 3;
+}
+
+/* 下部のアプリテキスト・ドットを黒帯で隠す */
+.gallery-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
   background: var(--dark);
   z-index: 3;
 }
