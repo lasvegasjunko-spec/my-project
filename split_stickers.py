@@ -4,31 +4,43 @@ LINE スタンプ作成スクリプト
 スタンプシート画像を個別PNG(370×320px)に分割します。
 
 使い方:
-    python3 split_stickers.py <画像ファイル> [--rows 行数] [--cols 列数]
+    python3 split_stickers.py <画像ファイル> [オプション]
 
 例:
-    python3 split_stickers.py sticker_sheet.jpg
-    python3 split_stickers.py sticker_sheet.jpg --rows 4 --cols 6
+    python3 split_stickers.py chiyoko.jpg --preview
+    python3 split_stickers.py chiyoko.jpg --gap_x 10 --gap_y 10 --preview
+    python3 split_stickers.py chiyoko.jpg --gap_x 10 --gap_y 10
 """
 
 import argparse
 import os
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
-# LINE スタンプ規格（静止画）
 LINE_WIDTH = 370
 LINE_HEIGHT = 320
 
 
-def split_sticker_sheet(image_path: str, rows: int, cols: int, output_dir: str) -> list[Path]:
+def split_sticker_sheet(
+    image_path: str,
+    rows: int,
+    cols: int,
+    output_dir: str,
+    gap_x: int = 0,
+    gap_y: int = 0,
+    margin: int = 0,
+) -> list[Path]:
     img = Image.open(image_path).convert("RGBA")
     w, h = img.size
     print(f"入力画像サイズ: {w}x{h}px  /  グリッド: {rows}行 × {cols}列")
 
-    cell_w = w // cols
-    cell_h = h // rows
+    inner_w = w - margin * 2
+    inner_h = h - margin * 2
+    cell_w = (inner_w - gap_x * (cols - 1)) // cols
+    cell_h = (inner_h - gap_y * (rows - 1)) // rows
+
+    print(f"1コマのサイズ: {cell_w}x{cell_h}px  (gap_x={gap_x}, gap_y={gap_y}, margin={margin})")
 
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -37,17 +49,14 @@ def split_sticker_sheet(image_path: str, rows: int, cols: int, output_dir: str) 
     n = 1
     for row in range(rows):
         for col in range(cols):
-            left = col * cell_w
-            top = row * cell_h
+            left = margin + col * (cell_w + gap_x)
+            top = margin + row * (cell_h + gap_y)
             right = left + cell_w
             bottom = top + cell_h
 
             cell = img.crop((left, top, right, bottom))
-
-            # 白い余白を透明に変換
             cell = remove_white_background(cell)
 
-            # LINE規格にリサイズ（比率を保ちながら内側に収める）
             cell.thumbnail((LINE_WIDTH, LINE_HEIGHT), Image.LANCZOS)
             canvas = Image.new("RGBA", (LINE_WIDTH, LINE_HEIGHT), (0, 0, 0, 0))
             x = (LINE_WIDTH - cell.width) // 2
@@ -63,8 +72,41 @@ def split_sticker_sheet(image_path: str, rows: int, cols: int, output_dir: str) 
     return paths
 
 
+def save_preview(
+    image_path: str,
+    rows: int,
+    cols: int,
+    gap_x: int = 0,
+    gap_y: int = 0,
+    margin: int = 0,
+) -> str:
+    """グリッド線を重ねたプレビュー画像を保存する"""
+    img = Image.open(image_path).convert("RGB")
+    w, h = img.size
+
+    inner_w = w - margin * 2
+    inner_h = h - margin * 2
+    cell_w = (inner_w - gap_x * (cols - 1)) // cols
+    cell_h = (inner_h - gap_y * (rows - 1)) // rows
+
+    draw = ImageDraw.Draw(img)
+    for row in range(rows):
+        for col in range(cols):
+            left = margin + col * (cell_w + gap_x)
+            top = margin + row * (cell_h + gap_y)
+            right = left + cell_w
+            bottom = top + cell_h
+            draw.rectangle([left, top, right - 1, bottom - 1], outline="red", width=3)
+            n = row * cols + col + 1
+            draw.text((left + 6, top + 4), str(n), fill="red")
+
+    out_path = Path(image_path).stem + "_preview.jpg"
+    img.save(out_path)
+    print(f"プレビュー保存: {out_path}")
+    return out_path
+
+
 def remove_white_background(img: Image.Image, threshold: int = 240) -> Image.Image:
-    """白背景を透明に変換する（シンプル版）"""
     import numpy as np
     img = img.convert("RGBA")
     arr = np.array(img)
@@ -75,7 +117,6 @@ def remove_white_background(img: Image.Image, threshold: int = 240) -> Image.Ima
 
 
 def make_main_image(sticker_path: str, output_dir: str) -> Path:
-    """LINE 規格のメイン画像（240×240）を作成"""
     img = Image.open(sticker_path).convert("RGBA")
     img.thumbnail((240, 240), Image.LANCZOS)
     canvas = Image.new("RGBA", (240, 240), (0, 0, 0, 0))
@@ -89,7 +130,6 @@ def make_main_image(sticker_path: str, output_dir: str) -> Path:
 
 
 def make_tab_image(sticker_path: str, output_dir: str) -> Path:
-    """LINE 規格のタブ画像（96×74）を作成"""
     img = Image.open(sticker_path).convert("RGBA")
     img.thumbnail((96, 74), Image.LANCZOS)
     canvas = Image.new("RGBA", (96, 74), (0, 0, 0, 0))
@@ -107,17 +147,29 @@ def main():
     parser.add_argument("image", help="スタンプシートの画像ファイル")
     parser.add_argument("--rows", type=int, default=4, help="行数 (デフォルト: 4)")
     parser.add_argument("--cols", type=int, default=6, help="列数 (デフォルト: 6)")
+    parser.add_argument("--gap_x", type=int, default=0, help="コマ間の横の隙間px (デフォルト: 0)")
+    parser.add_argument("--gap_y", type=int, default=0, help="コマ間の縦の隙間px (デフォルト: 0)")
+    parser.add_argument("--margin", type=int, default=0, help="画像外側の余白px (デフォルト: 0)")
     parser.add_argument("--out", default="line_stickers", help="出力フォルダ (デフォルト: line_stickers)")
+    parser.add_argument("--preview", action="store_true", help="分割位置を確認するプレビュー画像を保存")
     args = parser.parse_args()
 
     if not os.path.exists(args.image):
         print(f"エラー: ファイルが見つかりません: {args.image}")
         return
 
-    print(f"\n=== LINE スタンプ作成開始 ===")
-    stickers = split_sticker_sheet(args.image, args.rows, args.cols, args.out)
+    if args.preview:
+        print("\n=== プレビューモード ===")
+        out_path = save_preview(args.image, args.rows, args.cols, args.gap_x, args.gap_y, args.margin)
+        print(f"\nデスクトップの「{out_path}」を開いて赤枠がズレていないか確認してください。")
+        print("ズレている場合は --gap_x や --gap_y の値を調整してください。")
+        return
 
-    # 1枚目をメイン・タブ画像に使用
+    print(f"\n=== LINE スタンプ作成開始 ===")
+    stickers = split_sticker_sheet(
+        args.image, args.rows, args.cols, args.out, args.gap_x, args.gap_y, args.margin
+    )
+
     make_main_image(str(stickers[0]), args.out)
     make_tab_image(str(stickers[0]), args.out)
 
