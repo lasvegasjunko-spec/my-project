@@ -895,19 +895,22 @@ section { padding: 100px 0; }
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 240px 240px;
-  gap: 4px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
   margin-bottom: 40px;
 }
 
-.gallery-item { overflow: hidden; position: relative; cursor: pointer; }
+.gallery-item {
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  aspect-ratio: 3 / 4;
+  border-radius: 2px;
+}
+
 .gallery-inner {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: flex-end;
-  padding: 20px;
   position: relative;
   overflow: hidden;
 }
@@ -918,34 +921,24 @@ section { padding: 100px 0; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center top;
   transition: transform 0.7s ease;
 }
+
+/* スクリーンショットのテキスト部分を隠すため上部にフォーカス */
+.gp-top { object-position: center 8%; }
 
 .gallery-inner::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%);
+  background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 50%);
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
 }
 
-.gallery-label { position: relative; z-index: 1; }
-
-.gallery-item:hover .gallery-photo { transform: scale(1.07); }
-
-.gallery-label {
-  font-family: var(--font-en);
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
-  color: rgba(255,255,255,0.7);
-  background: rgba(0,0,0,0.4);
-  padding: 6px 12px;
-  backdrop-filter: blur(4px);
-}
-
-.g-tall { grid-row: 1 / 3; }
-.g-wide { grid-column: 2 / 4; }
+.gallery-item:hover .gallery-inner::after { opacity: 1; }
+.gallery-item:hover .gallery-photo { transform: scale(1.06); }
 
 .gallery-cta { text-align: center; }
 .gallery-cta p {
@@ -1604,10 +1597,7 @@ section { padding: 100px 0; }
 
   .gallery-grid {
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 180px 180px 180px;
   }
-  .g-tall { grid-row: auto; }
-  .g-wide { grid-column: auto; }
 
   .numbers-grid { grid-template-columns: repeat(2, 1fr); }
   .num-item::after { display: none; }
