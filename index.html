@@ -32,16 +32,17 @@
   <!-- ヒーロー -->
   <section id="hero">
     <div class="hero-bg">
+      <img src="images/hero.jpg" alt="NOIR HAIR STUDIO" class="hero-photo" />
       <div class="hero-gradient"></div>
       <div class="hero-particles" id="particles"></div>
     </div>
     <div class="hero-content">
       <p class="hero-sub reveal">PREMIUM HAIR SALON IN TOKYO</p>
       <h1 class="hero-title reveal">
-        <span class="line">あなたの美しさを、</span>
-        <span class="line italic">アートへ。</span>
+        <span class="line">あなたらしさを、</span>
+        <span class="line italic">美しく引き出す</span>
       </h1>
-      <p class="hero-desc reveal">最先端のトレンドと洗練された技術で、<br>あなただけのスタイルを創り上げます。</p>
+      <p class="hero-desc reveal">一人ひとりに似合うスタイルを<br>丁寧なカウンセリングと確かな技術でご提案します</p>
       <div class="hero-btns reveal">
         <a href="#contact" class="btn btn-primary">WEB予約</a>
         <a href="#services" class="btn btn-outline">サービス一覧</a>
@@ -75,30 +76,63 @@
     </div>
   </div>
 
+  <!-- サービスビジュアル（写真コンポジット） -->
+  <section id="services-visual">
+    <div class="sv-grid">
+
+      <!-- 左：メイン（ヘアスタイリスト） -->
+      <div class="sv-main reveal-left">
+        <img src="images/hero.jpg" alt="ヘアスタイリスト施術" class="sv-img sv-img-crop-stylist" />
+        <div class="sv-overlay">
+          <div class="sv-label">
+            <span class="sv-en">HAIR STYLIST</span>
+            <span class="sv-jp">ヘアスタイリスト</span>
+          </div>
+          <div class="sv-tagline">
+            <h3>あなたらしさを、<br>美しく引き出す</h3>
+            <p>一人ひとりに似合うスタイルを<br>丁寧なカウンセリングと確かな技術でご提案します</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右列 -->
+      <div class="sv-col">
+
+        <!-- 右上：訪問福祉美容 -->
+        <div class="sv-sub reveal-right" data-delay="100">
+          <img src="images/hero.jpg" alt="訪問・福祉美容" class="sv-img sv-img-crop-welfare" />
+          <div class="sv-overlay sv-overlay-dark">
+            <div class="sv-label">
+              <span class="sv-en">WELFARE BEAUTY</span>
+              <span class="sv-jp">訪問福祉美容師</span>
+            </div>
+            <p class="sv-sub-desc">ご自宅や施設に訪問し、<br>安心・安全に配慮した美容サービスを提供します</p>
+          </div>
+        </div>
+
+        <!-- 右下：メイクアップ -->
+        <div class="sv-sub reveal-right" data-delay="200">
+          <img src="images/hero.jpg" alt="ヘアメイクアップ" class="sv-img sv-img-crop-makeup" />
+          <div class="sv-overlay sv-overlay-light">
+            <div class="sv-label sv-label-dark">
+              <span class="sv-en">MAKEUP ARTIST</span>
+              <span class="sv-jp">メイクアップアーティスト</span>
+            </div>
+            <p class="sv-sub-desc sv-sub-desc-dark">特別な日を、より輝くあなたに。<br>メイクで魅力を引き出し、自信あふれる表情をお手伝いします。</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- オーナー紹介 -->
   <section id="about">
     <div class="container">
       <div class="about-grid">
         <div class="about-img-wrap reveal-left">
           <div class="about-img">
-            <div class="about-img-inner">
-              <div class="owner-avatar">
-                <div class="avatar-circle">
-                  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                      <linearGradient id="avatarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#c9a96e"/>
-                        <stop offset="100%" style="stop-color:#f0d080"/>
-                      </linearGradient>
-                    </defs>
-                    <circle cx="100" cy="80" r="45" fill="url(#avatarGrad)" opacity="0.9"/>
-                    <ellipse cx="100" cy="165" rx="60" ry="40" fill="url(#avatarGrad)" opacity="0.7"/>
-                    <circle cx="100" cy="80" r="42" fill="none" stroke="#c9a96e" stroke-width="1" opacity="0.5"/>
-                  </svg>
-                </div>
-                <div class="scissors-icon">✂</div>
-              </div>
-            </div>
+            <img src="images/hero.jpg" alt="オーナースタイリスト" class="about-photo" />
             <div class="about-img-deco"></div>
           </div>
           <div class="about-stat-card">
