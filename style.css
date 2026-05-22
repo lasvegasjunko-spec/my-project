@@ -924,8 +924,8 @@ section { padding: 100px 0; }
   transition: transform 0.7s ease;
 }
 
-/* スクリーンショットのテキスト部分を隠すため上部にフォーカス */
-.gp-top { object-position: center 8%; }
+/* スクリーンショットのアプリUIを隠すためトップをカット */
+.gp-top { object-position: center 22%; }
 
 .gallery-inner::after {
   content: '';
