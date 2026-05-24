@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude AI Assistant — 設定</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="options-body">
+  <div class="options-container">
+    <h1 class="options-title">
+      <img src="icons/icon32.png" alt="Claude" width="28" height="28" />
+      Claude AI Assistant — 設定
+    </h1>
+
+    <div class="options-card">
+      <h2 class="card-title">Anthropic APIキー</h2>
+      <p class="card-description">
+        Anthropic APIキーを入力してください。APIキーは
+        <a href="https://console.anthropic.com/account/keys" target="_blank">Anthropicコンソール</a>
+        から取得できます。
+      </p>
+
+      <div class="form-group">
+        <label for="api-key" class="form-label">APIキー</label>
+        <div class="input-row">
+          <input
+            type="password"
+            id="api-key"
+            class="form-input"
+            placeholder="sk-ant-..."
+            autocomplete="off"
+          />
+          <button id="toggle-visibility" class="btn btn-secondary btn-sm" type="button">表示</button>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button id="save-btn" class="btn btn-primary">保存</button>
+        <button id="clear-btn" class="btn btn-danger">削除</button>
+      </div>
+
+      <div id="status-msg" class="status-msg hidden"></div>
+    </div>
+
+    <div class="options-card">
+      <h2 class="card-title">使い方</h2>
+      <ul class="usage-list">
+        <li>ページ上でテキストを選択して右クリック → Claudeで要約/説明/翻訳</li>
+        <li>ツールバーのアイコンをクリック → チャット・選択テキスト操作</li>
+        <li>ポップアップのチャット欄から自由に質問できます</li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
