@@ -1,0 +1,56 @@
+:root {
+  color-scheme: light;
+  font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+}
+
+body { margin: 0; background: #f5f6f8; color: #1a1a2e; }
+
+.app { max-width: 880px; margin: 0 auto; padding: 1rem 1.25rem 4rem; }
+
+header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+header h1 { font-size: 1.4rem; }
+.year select { margin-left: .5rem; }
+
+.tabs { display: flex; gap: .25rem; margin: 1rem 0; border-bottom: 2px solid #d6d9e0; }
+.tabs button {
+  border: none; background: none; padding: .6rem 1rem; font-size: 1rem;
+  cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;
+}
+.tabs button.active { border-bottom-color: #2b6cb0; color: #2b6cb0; font-weight: 700; }
+
+section { background: #fff; border-radius: 10px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+h2 { margin-top: 0; font-size: 1.15rem; }
+h3 { margin: 1.5rem 0 .5rem; font-size: 1rem; }
+h3 small { font-weight: 400; color: #555; margin-left: .5rem; }
+
+.field { display: flex; flex-direction: column; gap: .25rem; margin: .6rem 0; }
+.field span { font-size: .85rem; color: #444; }
+.field small { color: #888; }
+.field input, .field select { padding: .45rem .6rem; border: 1px solid #c4c9d4; border-radius: 6px; font-size: 1rem; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 1.25rem; }
+
+.summary { background: #eef4fb; border-radius: 8px; padding: .7rem 1rem; margin-top: 1rem; }
+
+table.entries { width: 100%; border-collapse: collapse; margin-bottom: .5rem; }
+table.entries th { text-align: left; font-size: .8rem; color: #666; padding: .25rem .35rem; }
+table.entries td { padding: .15rem .35rem; }
+table.entries input, table.entries select { width: 100%; box-sizing: border-box; padding: .35rem .5rem; border: 1px solid #d4d8e0; border-radius: 5px; }
+table.entries input.num { text-align: right; }
+button.del { border: none; background: none; color: #c0392b; font-size: 1.1rem; cursor: pointer; }
+
+.csv { display: block; margin: .5rem 0 1rem; font-size: .85rem; color: #555; }
+.messages { font-size: .85rem; color: #7a5c00; background: #fff8e1; border-radius: 6px; padding: .5rem 1.5rem; }
+
+table.result, table.breakdown { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; }
+table.result td, table.breakdown td { padding: .45rem .5rem; border-bottom: 1px solid #eceef2; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+tr.total td { font-weight: 700; border-top: 2px solid #2b6cb0; }
+tr.refund td { color: #1d7a3e; }
+tr.due td { color: #b23b3b; }
+
+.disclaimer { font-size: .8rem; color: #888; line-height: 1.6; }
+
+section button:not(.del) {
+  padding: .4rem .9rem; border: 1px solid #c4c9d4; background: #fff; border-radius: 6px; cursor: pointer;
+}
