@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>BGM動画ファクトリー</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; background: #14141f; color: #e8e8f0; height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 12px 20px; background: #1d1d2e; border-bottom: 1px solid #33334d; }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header span { color: #8a8aa8; font-size: 12px; margin-left: 12px; }
+  .grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; padding: 10px; min-height: 0; }
+  .pane { background: #1d1d2e; border: 1px solid #33334d; border-radius: 10px; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  .pane h2 { font-size: 14px; color: #9d9dff; }
+  .drop { border: 2px dashed #44446a; border-radius: 8px; padding: 24px; text-align: center; color: #8a8aa8; cursor: pointer; font-size: 13px; }
+  .drop.ok { border-color: #5dba6f; color: #5dba6f; }
+  label { font-size: 12px; color: #8a8aa8; }
+  input[type=text], input[type=number], select, textarea { width: 100%; background: #14141f; border: 1px solid #33334d; border-radius: 6px; color: #e8e8f0; padding: 8px; font-size: 13px; }
+  textarea { min-height: 90px; resize: vertical; }
+  button { background: #5b5bd6; color: #fff; border: 0; border-radius: 6px; padding: 10px 14px; font-size: 13px; cursor: pointer; }
+  button:disabled { opacity: .4; cursor: default; }
+  button.big { font-size: 15px; padding: 12px; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  img.preview { max-width: 100%; max-height: 160px; border-radius: 8px; object-fit: cover; align-self: center; }
+  .job { background: #14141f; border: 1px solid #33334d; border-radius: 8px; padding: 10px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .job .st { font-size: 12px; color: #8a8aa8; }
+  .job.done .st { color: #5dba6f; }
+  .job.error .st { color: #e05d5d; }
+  .job a { color: #9d9dff; }
+  small.note { color: #c9a86a; }
+  .copy { background: #2c2c44; }
+</style>
+</head>
+<body>
+<header><h1>🎵 BGM動画ファクトリー</h1><span>曲とジャケットを入れたら、YouTube投稿パッケージが出てくる</span></header>
+<div class="grid">
+
+  <div class="pane">
+    <h2>① 音源 (Sunoの曲をドロップ)</h2>
+    <div class="drop" id="audioDrop" onclick="pick('audio')">🎧 MP3 / WAV をドロップ or クリック</div>
+    <input type="file" id="audioFile" accept="audio/*" hidden>
+    <label>動画の長さ</label>
+    <select id="minutes">
+      <option value="30">30分</option>
+      <option value="60" selected>1時間</option>
+      <option value="120">2時間</option>
+      <option value="180">3時間</option>
+    </select>
+    <small>クロスフェードで自然にループ伸長＋音量正規化されます</small>
+  </div>
+
+  <div class="pane">
+    <h2>② ビジュアル (ジャケット画像)</h2>
+    <div class="drop" id="imageDrop" onclick="pick('image')">🖼 PNG / JPG をドロップ or クリック</div>
+    <input type="file" id="imageFile" accept="image/*" hidden>
+    <img class="preview" id="preview" hidden>
+    <label>エフェクト</label>
+    <select id="effect">
+      <option value="zoom" selected>ゆっくりズーム</option>
+      <option value="static">静止画</option>
+    </select>
+  </div>
+
+  <div class="pane">
+    <h2>③ メタデータ (タイトル・説明・タグ)</h2>
+    <div class="row">
+      <input type="text" id="theme" placeholder="テーマ (例: 雨音とピアノ)">
+      <input type="text" id="genre" placeholder="ジャンル (例: 睡眠用オルゴール)">
+    </div>
+    <button onclick="genMeta()" id="metaBtn">🤖 AIで生成</button>
+    <small class="note" id="metaNote"></small>
+    <label>タイトル (日)</label><input type="text" id="titleJa">
+    <label>タイトル (英)</label><input type="text" id="titleEn">
+    <label>説明文</label><textarea id="desc"></textarea>
+    <label>タグ</label><textarea id="tags" style="min-height:50px"></textarea>
+    <button class="copy" onclick="copyAll()">📋 全部コピー</button>
+  </div>
+
+  <div class="pane">
+    <h2>④ レンダリングキュー</h2>
+    <button class="big" onclick="createJob()" id="renderBtn" disabled>▶ 動画を生成する</button>
+    <div id="jobs"></div>
+  </div>
+
+</div>
+<script>
+let uploaded = { audio: null, image: null };
+
+function pick(kind) { document.getElementById(kind + 'File').click(); }
+
+for (const kind of ['audio', 'image']) {
+  const input = document.getElementById(kind + 'File');
+  const drop = document.getElementById(kind + 'Drop');
+  input.onchange = () => input.files[0] && upload(kind, input.files[0]);
+  drop.ondragover = e => e.preventDefault();
+  drop.ondrop = e => { e.preventDefault(); e.dataTransfer.files[0] && upload(kind, e.dataTransfer.files[0]); };
+}
+
+async function upload(kind, file) {
+  const fd = new FormData();
+  fd.append('file', file); fd.append('kind', kind);
+  const r = await fetch('/api/upload', { method: 'POST', body: fd });
+  const j = await r.json();
+  uploaded[kind] = j.filename;
+  const drop = document.getElementById(kind + 'Drop');
+  drop.textContent = '✅ ' + j.original;
+  drop.classList.add('ok');
+  if (kind === 'image') {
+    const img = document.getElementById('preview');
+    img.src = URL.createObjectURL(file); img.hidden = false;
+  }
+  document.getElementById('renderBtn').disabled = !(uploaded.audio && uploaded.image);
+}
+
+async function genMeta() {
+  const btn = document.getElementById('metaBtn');
+  btn.disabled = true; btn.textContent = '生成中...';
+  const fd = new FormData();
+  fd.append('theme', document.getElementById('theme').value || 'リラックスBGM');
+  fd.append('genre', document.getElementById('genre').value || '睡眠用音楽');
+  fd.append('minutes', document.getElementById('minutes').value);
+  try {
+    const j = await (await fetch('/api/metadata', { method: 'POST', body: fd })).json();
+    document.getElementById('titleJa').value = j.title_ja;
+    document.getElementById('titleEn').value = j.title_en;
+    document.getElementById('desc').value = j.description;
+    document.getElementById('tags').value = (j.tags || []).join(', ');
+    document.getElementById('metaNote').textContent = j.note || '';
+  } finally { btn.disabled = false; btn.textContent = '🤖 AIで生成'; }
+}
+
+function copyAll() {
+  navigator.clipboard.writeText(
+    document.getElementById('titleJa').value + '\n' +
+    document.getElementById('titleEn').value + '\n\n' +
+    document.getElementById('desc').value + '\n\nタグ:\n' +
+    document.getElementById('tags').value
+  );
+}
+
+async function createJob() {
+  const fd = new FormData();
+  fd.append('audio', uploaded.audio);
+  fd.append('image', uploaded.image);
+  fd.append('minutes', document.getElementById('minutes').value);
+  fd.append('effect', document.getElementById('effect').value);
+  fd.append('title', document.getElementById('titleJa').value);
+  await fetch('/api/jobs', { method: 'POST', body: fd });
+  loadJobs();
+}
+
+async function loadJobs() {
+  const jobs = await (await fetch('/api/jobs')).json();
+  document.getElementById('jobs').innerHTML = jobs.map(j => `
+    <div class="job ${j.status}">
+      <div><div>${j.title}</div><div class="st">${j.progress}${j.error ? ' — ' + j.error.slice(0, 120) : ''}</div></div>
+      ${j.output ? `<a href="/api/download/${j.output}" download>⬇ DL</a>` : ''}
+    </div>`).join('');
+}
+setInterval(loadJobs, 3000);
+loadJobs();
+</script>
+</body>
+</html>
