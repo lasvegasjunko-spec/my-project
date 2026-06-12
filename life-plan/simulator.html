@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ライフプラン・シミュレーター</title>
+<style>
+  :root {
+    --main: #2563eb;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --danger: #dc2626;
+    --ok: #16a34a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    margin: 0; background: var(--bg); color: var(--text);
+  }
+  header {
+    background: var(--main); color: #fff; padding: 16px 24px;
+  }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: .9; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 16px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card); border-radius: 12px; padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 16px;
+  }
+  .card h2 { font-size: 15px; margin: 0 0 12px; border-left: 4px solid var(--main); padding-left: 8px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 2px; }
+  input[type=number] {
+    width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px;
+    font-size: 14px;
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .stat { background: #f1f5f9; border-radius: 8px; padding: 12px; text-align: center; }
+  .stat .v { font-size: 20px; font-weight: bold; }
+  .stat .l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .danger { color: var(--danger); }
+  .ok { color: var(--ok); }
+  canvas { width: 100%; height: 320px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 4px 6px; text-align: right; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+  th { background: #f1f5f9; position: sticky; top: 0; }
+  td:first-child, th:first-child { text-align: left; }
+  .neg { color: var(--danger); }
+  .table-wrap { max-height: 400px; overflow: auto; }
+  .note { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  button {
+    background: var(--main); color: #fff; border: none; border-radius: 6px;
+    padding: 8px 14px; font-size: 13px; cursor: pointer; margin-top: 12px;
+  }
+  button:hover { opacity: .9; }
+</style>
+</head>
+<body>
+<header>
+  <h1>ライフプラン・シミュレーター</h1>
+  <p>前提を変えると、資産推移のグラフと表がすぐに更新されます（金額の単位はすべて「万円」）</p>
+</header>
+<div class="container">
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>基本情報</h2>
+        <div class="row2">
+          <div><label>現在の年齢</label><input type="number" id="age" value="52"></div>
+          <div><label>子どもの年齢</label><input type="number" id="childAge" value="10"></div>
+        </div>
+        <div class="row2">
+          <div><label>現在の金融資産（万円）</label><input type="number" id="assets" value="3331"></div>
+          <div><label>想定利回り（年率%）</label><input type="number" id="ret" value="4" step="0.5"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>収入</h2>
+        <div class="row2">
+          <div><label>手取り年収（万円）</label><input type="number" id="income" value="720"></div>
+          <div><label>何歳まで働く</label><input type="number" id="retireAge" value="65"></div>
+        </div>
+        <div class="row2">
+          <div><label>年金 開始年齢</label><input type="number" id="pensionAge" value="65"></div>
+          <div><label>年金額（年・万円）</label><input type="number" id="pension" value="190"></div>
+        </div>
+        <label>養育費（月・万円、子が20歳まで）</label>
+        <input type="number" id="childSupport" value="0">
+      </div>
+      <div class="card">
+        <h2>支出</h2>
+        <div class="row2">
+          <div><label>生活費（年・万円）<br>※家賃光熱費を除く</label><input type="number" id="living" value="500"></div>
+          <div><label>子の独立後の生活費（年）</label><input type="number" id="livingAfter" value="400"></div>
+        </div>
+        <div class="row2">
+          <div><label>子の独立年齢</label><input type="number" id="indepAge" value="23"></div>
+          <div><label>家賃+光熱費（月・万円）</label><input type="number" id="housing" value="18"></div>
+        </div>
+        <label>退職後の家賃+光熱費（月・万円）※住み替える場合は減らす</label>
+        <input type="number" id="housingAfter" value="18">
+        <div class="row2">
+          <div><label>思い出予算（年・万円）<br>子が20歳まで</label><input type="number" id="memories" value="60"></div>
+          <div><label>大学費用 総額（万円）<br>子18〜21歳で4分割</label><input type="number" id="education" value="600"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h2>結果サマリー</h2>
+        <div class="stats" id="stats"></div>
+        <p class="note" id="advice"></p>
+      </div>
+      <div class="card">
+        <h2>資産残高の推移（95歳まで）</h2>
+        <canvas id="chart" width="700" height="320"></canvas>
+      </div>
+      <div class="card">
+        <h2>年別の内訳</h2>
+        <div class="table-wrap">
+          <table id="tbl"></table>
+        </div>
+        <p class="note">
+          ※ 簡易シミュレーションです。インフレ・税金・年金の正確な見込み額は反映していません。
+          利回りを「インフレ調整後（実質）」と考えるなら 3〜4% 程度が無難です。
+          正確な年金額は「ねんきんネット」で確認できます。
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const inputs = ["age","childAge","assets","ret","income","retireAge","pensionAge","pension",
+  "childSupport","living","livingAfter","indepAge","housing","housingAfter","memories","education"];
+inputs.forEach(id => $(id).addEventListener("input", run));
+
+function fmt(n) { return Math.round(n).toLocaleString("ja-JP"); }
+
+function simulate() {
+  const p = {};
+  inputs.forEach(id => p[id] = parseFloat($(id).value) || 0);
+  const rows = [];
+  let assets = p.assets;
+  const endAge = 95;
+  for (let age = p.age; age <= endAge; age++) {
+    const child = p.childAge + (age - p.age);
+    let income = 0;
+    if (age < p.retireAge) income += p.income;
+    if (age >= p.pensionAge) income += p.pension;
+    if (child <= 20) income += p.childSupport * 12;
+    const housing = (age < p.retireAge ? p.housing : p.housingAfter) * 12;
+    let expense = (child < p.indepAge ? p.living : p.livingAfter) + housing;
+    if (child >= 10 && child <= 20) expense += p.memories;
+    if (child >= 18 && child <= 21) expense += p.education / 4;
+    const cf = income - expense;
+    assets = assets * (1 + p.ret / 100) + cf;
+    rows.push({ age, child, income, expense, cf, assets });
+  }
+  return { p, rows };
+}
+
+function run() {
+  const { p, rows } = simulate();
+  const depleted = rows.find(r => r.assets < 0);
+  const atRetire = rows.find(r => r.age === p.retireAge - 1);
+  const last = rows[rows.length - 1];
+
+  const stats = [
+    { l: `退職時（${p.retireAge}歳）の資産`, v: atRetire ? fmt(atRetire.assets) + " 万円" : "—", cls: "" },
+    depleted
+      ? { l: "資産が尽きる年齢", v: depleted.age + " 歳", cls: "danger" }
+      : { l: "95歳時点の残高", v: fmt(last.assets) + " 万円", cls: "ok" },
+    { l: "現役中の年間収支", v: fmt(rows[0].cf) + " 万円/年", cls: rows[0].cf < 0 ? "danger" : "ok" },
+  ];
+  $("stats").innerHTML = stats.map(s =>
+    `<div class="stat"><div class="v ${s.cls}">${s.v}</div><div class="l">${s.l}</div></div>`).join("");
+
+  $("advice").textContent = depleted
+    ? `この前提では ${depleted.age} 歳で資産が尽きます。「何歳まで働くか」「生活費」「退職後の家賃」を調整してみてください。`
+    : `この前提なら 95 歳まで資産がもちます。余裕分は「思い出予算」や生活の質に回せます。`;
+
+  drawChart(rows, p);
+  $("tbl").innerHTML =
+    `<tr><th>年齢</th><th>子の年齢</th><th>収入</th><th>支出</th><th>年間収支</th><th>資産残高</th></tr>` +
+    rows.map(r => `<tr>
+      <td>${r.age}歳</td><td>${r.child}歳</td>
+      <td>${fmt(r.income)}</td><td>${fmt(r.expense)}</td>
+      <td class="${r.cf < 0 ? "neg" : ""}">${fmt(r.cf)}</td>
+      <td class="${r.assets < 0 ? "neg" : ""}">${fmt(r.assets)}</td>
+    </tr>`).join("");
+}
+
+function drawChart(rows, p) {
+  const c = $("chart"), ctx = c.getContext("2d");
+  const W = c.width, H = c.height, padL = 60, padR = 10, padT = 10, padB = 28;
+  ctx.clearRect(0, 0, W, H);
+  const vals = rows.map(r => r.assets);
+  const maxV = Math.max(...vals, 0) * 1.1 || 100;
+  const minV = Math.min(...vals, 0) * 1.1;
+  const x = i => padL + (W - padL - padR) * i / (rows.length - 1);
+  const y = v => padT + (H - padT - padB) * (maxV - v) / (maxV - minV);
+
+  ctx.strokeStyle = "#e2e8f0"; ctx.fillStyle = "#64748b"; ctx.font = "11px sans-serif";
+  const steps = 5;
+  for (let i = 0; i <= steps; i++) {
+    const v = minV + (maxV - minV) * i / steps;
+    ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(W - padR, y(v)); ctx.stroke();
+    ctx.textAlign = "right"; ctx.fillText(Math.round(v).toLocaleString(), padL - 6, y(v) + 4);
+  }
+  ctx.textAlign = "center";
+  rows.forEach((r, i) => { if (r.age % 5 === 0) ctx.fillText(r.age + "歳", x(i), H - 8); });
+
+  if (minV < 0) {
+    ctx.strokeStyle = "#dc2626"; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(padL, y(0)); ctx.lineTo(W - padR, y(0)); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 2; ctx.beginPath();
+  rows.forEach((r, i) => i === 0 ? ctx.moveTo(x(i), y(r.assets)) : ctx.lineTo(x(i), y(r.assets)));
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(37,99,235,.12)";
+  ctx.lineTo(x(rows.length - 1), y(Math.max(minV, 0)));
+  ctx.lineTo(x(0), y(Math.max(minV, 0)));
+  ctx.fill();
+  ctx.lineWidth = 1;
+
+  const retireIdx = rows.findIndex(r => r.age === p.retireAge);
+  if (retireIdx >= 0) {
+    ctx.strokeStyle = "#f59e0b"; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(x(retireIdx), padT); ctx.lineTo(x(retireIdx), H - padB); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#f59e0b"; ctx.fillText("退職", x(retireIdx), padT + 12);
+  }
+}
+
+run();
+</script>
+</body>
+</html>
