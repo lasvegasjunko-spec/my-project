@@ -15,7 +15,7 @@ const emptyDeductions: DeductionInput = {
   singleParent: 'none',
 };
 
-const emptyBusiness: BusinessInput = { revenues: [], expenses: [], assets: [], blueDeductionType: 0 };
+const emptyBusiness: BusinessInput = { revenues: [], expenses: [], assets: [], blueDeductionType: 0, journal: [], dedicatedSpouseWage: 0 };
 
 describe('給与所得控除（令和7年分以降）', () => {
   it('最低保障65万円', () => {
@@ -98,7 +98,7 @@ describe('事業所得と青色申告特別控除', () => {
     const biz: BusinessInput = {
       revenues: [{ id: '1', date: '2025-01-01', description: '売上', amount: 3_000_000 }],
       expenses: [{ id: '1', date: '2025-01-01', category: '通信費', description: '', amount: 500_000 }],
-      assets: [], blueDeductionType: 65,
+      assets: [], blueDeductionType: 65, journal: [], dedicatedSpouseWage: 0,
     };
     const r = businessIncome(biz, 2025);
     expect(r.profit).toBe(2_500_000);
@@ -108,7 +108,7 @@ describe('事業所得と青色申告特別控除', () => {
   it('控除は黒字を限度', () => {
     const biz: BusinessInput = {
       revenues: [{ id: '1', date: '2025-01-01', description: '', amount: 400_000 }],
-      expenses: [], assets: [], blueDeductionType: 65,
+      expenses: [], assets: [], blueDeductionType: 65, journal: [], dedicatedSpouseWage: 0,
     };
     expect(businessIncome(biz, 2025).blueDeduction).toBe(400_000);
     expect(businessIncome(biz, 2025).income).toBe(0);
@@ -131,7 +131,7 @@ describe('総合計算', () => {
     const biz: BusinessInput = {
       revenues: [{ id: '1', date: '2025-01-01', description: '', amount: 100_000 }],
       expenses: [{ id: '1', date: '2025-01-01', category: '雑費', description: '', amount: 1_100_000 }],
-      assets: [], blueDeductionType: 65,
+      assets: [], blueDeductionType: 65, journal: [], dedicatedSpouseWage: 0,
     };
     const r = calculate(salary, biz, emptyDeductions, 2025);
     expect(r.totalIncome).toBe(2_760_000 - 1_000_000);

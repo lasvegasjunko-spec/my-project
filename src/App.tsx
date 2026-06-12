@@ -1,17 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import type {
   SalaryInput, BusinessInput, DeductionInput, ExpenseEntry, RevenueEntry,
-  FixedAsset, ExpenseCategory, BlueDeductionType,
+  FixedAsset, ExpenseCategory, BlueDeductionType, JournalEntry,
 } from './tax/types';
 import { EXPENSE_CATEGORIES } from './tax/types';
 import { calculate } from './tax/engine';
 import { parseExpenseCsv, parseRevenueCsv } from './tax/csv';
+import { derivePL, deriveBS, parseJournalCsv, isBalanced } from './tax/journal';
+import { ACCOUNTS } from './tax/accounts';
 import './App.css';
 
-const STORAGE_KEY = 'kakutei-shinkoku-data-v1';
+const STORAGE_KEY = 'kakutei-shinkoku-data-v2';
 
 const defaultSalary: SalaryInput = { grossSalary: 0, withheldTax: 0 };
-const defaultBusiness: BusinessInput = { revenues: [], expenses: [], assets: [], blueDeductionType: 65 };
+const defaultBusiness: BusinessInput = {
+  revenues: [], expenses: [], assets: [], blueDeductionType: 65,
+  journal: [], dedicatedSpouseWage: 0,
+};
 const defaultDeductions: DeductionInput = {
   socialInsurance: 0, smallBusinessMutualAid: 0,
   lifeInsuranceGeneral: 0, lifeInsuranceCare: 0, lifeInsurancePension: 0,
@@ -31,7 +36,13 @@ interface AppData {
 function loadData(): AppData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const d = JSON.parse(raw) as Partial<AppData>;
+      // 旧バージョンのデータを移行
+      if (d.business && !d.business.journal) d.business.journal = [];
+      if (d.business && d.business.dedicatedSpouseWage === undefined) d.business.dedicatedSpouseWage = 0;
+      return { taxYear: 2025, salary: defaultSalary, business: defaultBusiness, deductions: defaultDeductions, ...d };
+    }
   } catch { /* 破損時は初期値 */ }
   return { taxYear: 2025, salary: defaultSalary, business: defaultBusiness, deductions: defaultDeductions };
 }
@@ -61,7 +72,7 @@ function NumberField({ label, value, onChange, note }: {
   );
 }
 
-type Tab = 'salary' | 'business' | 'deductions' | 'result';
+type Tab = 'salary' | 'business' | 'journal' | 'financials' | 'deductions' | 'result' | 'etax';
 
 export default function App() {
   const [data, setData] = useState<AppData>(loadData);
@@ -77,15 +88,22 @@ export default function App() {
     [data],
   );
 
+  const pl = useMemo(() => derivePL(data.business.journal), [data.business.journal]);
+  const bs = useMemo(() => deriveBS(data.business.journal, pl.netProfit), [data.business.journal, pl.netProfit]);
+
   const setSalary = (p: Partial<SalaryInput>) => setData((d) => ({ ...d, salary: { ...d.salary, ...p } }));
   const setBusiness = (p: Partial<BusinessInput>) => setData((d) => ({ ...d, business: { ...d.business, ...p } }));
   const setDed = (p: Partial<DeductionInput>) => setData((d) => ({ ...d, deductions: { ...d.deductions, ...p } }));
 
-  const importCsv = (kind: 'expense' | 'revenue') => async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const importCsv = (kind: 'expense' | 'revenue' | 'journal') => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const text = await file.text();
-    if (kind === 'expense') {
+    if (kind === 'journal') {
+      const { entries, errors } = parseJournalCsv(text);
+      setBusiness({ journal: [...data.business.journal, ...entries] });
+      setCsvMessages([`仕訳 ${entries.length}件を取込みました`, ...errors]);
+    } else if (kind === 'expense') {
       const { entries, errors } = parseExpenseCsv(text);
       setBusiness({ expenses: [...data.business.expenses, ...entries] });
       setCsvMessages([`経費 ${entries.length}件を取込みました`, ...errors]);
@@ -103,6 +121,18 @@ export default function App() {
     return m;
   }, [data.business.expenses]);
 
+  const useJournal = data.business.journal.length > 0;
+
+  const TAB_LABELS: [Tab, string][] = [
+    ['salary', '給与所得'],
+    ['business', '事業（簡易）'],
+    ['journal', '仕訳帳'],
+    ['financials', '財務諸表'],
+    ['deductions', '所得控除'],
+    ['result', '計算結果'],
+    ['etax', 'e-Tax入力ガイド'],
+  ];
+
   return (
     <div className="app">
       <header>
@@ -115,13 +145,17 @@ export default function App() {
           </select>
         </label>
       </header>
+      {useJournal && (
+        <p className="mode-badge">複式簿記モード（仕訳帳から事業所得を計算）</p>
+      )}
 
       <nav className="tabs">
-        {([['salary', '給与所得'], ['business', '事業所得'], ['deductions', '所得控除'], ['result', '計算結果']] as [Tab, string][]).map(([t, label]) => (
+        {TAB_LABELS.map(([t, label]) => (
           <button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>{label}</button>
         ))}
       </nav>
 
+      {/* ── 給与所得 ───────────────────────────────────────────────────────── */}
       {tab === 'salary' && (
         <section>
           <h2>給与所得（源泉徴収票から転記）</h2>
@@ -131,15 +165,14 @@ export default function App() {
         </section>
       )}
 
+      {/* ── 事業所得（簡易） ─────────────────────────────────────────────── */}
       {tab === 'business' && (
         <section>
-          <h2>事業所得</h2>
+          <h2>事業所得（簡易入力）</h2>
+          <p className="note">仕訳帳タブに1件以上入力すると、仕訳帳から事業所得を計算します（このタブの値は無視されます）。</p>
           <label className="field">
             <span>青色申告特別控除</span>
-            <select
-              value={data.business.blueDeductionType}
-              onChange={(e) => setBusiness({ blueDeductionType: Number(e.target.value) as BlueDeductionType })}
-            >
+            <select value={data.business.blueDeductionType} onChange={(e) => setBusiness({ blueDeductionType: Number(e.target.value) as BlueDeductionType })}>
               <option value={65}>65万円（複式簿記＋e-Tax/電子帳簿）</option>
               <option value={55}>55万円（複式簿記・書面提出）</option>
               <option value={10}>10万円（簡易簿記）</option>
@@ -147,7 +180,7 @@ export default function App() {
             </select>
           </label>
 
-          <h3>売上 <small>合計 {yen(result.businessRevenue)}</small></h3>
+          <h3>売上 <small>合計 {yen(data.business.revenues.reduce((s, r) => s + r.amount, 0))}</small></h3>
           <EntryTable<RevenueEntry>
             entries={data.business.revenues}
             columns={[
@@ -160,7 +193,7 @@ export default function App() {
           />
           <label className="csv">売上CSV取込（日付,摘要,金額）<input type="file" accept=".csv,text/csv" onChange={importCsv('revenue')} /></label>
 
-          <h3>経費 <small>合計 {yen(result.businessExpenses)}</small></h3>
+          <h3>経費 <small>合計 {yen(data.business.expenses.reduce((s, e) => s + e.amount, 0))}</small></h3>
           <EntryTable<ExpenseEntry>
             entries={data.business.expenses}
             columns={[
@@ -177,28 +210,145 @@ export default function App() {
 
           {expenseByCategory.size > 0 && (
             <details>
-              <summary>経費の科目別内訳（収支内訳書/決算書用）</summary>
-              <table className="breakdown">
-                <tbody>
-                  {[...expenseByCategory.entries()].map(([c, v]) => (
-                    <tr key={c}><td>{c}</td><td className="num">{yen(v)}</td></tr>
-                  ))}
-                  {result.depreciation > 0 && <tr><td>減価償却費</td><td className="num">{yen(result.depreciation)}</td></tr>}
-                </tbody>
-              </table>
+              <summary>経費の科目別内訳</summary>
+              <table className="breakdown"><tbody>
+                {[...expenseByCategory.entries()].map(([c, v]) => (
+                  <tr key={c}><td>{c}</td><td className="num">{yen(v)}</td></tr>
+                ))}
+                {result.depreciation > 0 && <tr><td>減価償却費</td><td className="num">{yen(result.depreciation)}</td></tr>}
+              </tbody></table>
             </details>
           )}
 
-          <h3>固定資産（定額法・減価償却） <small>当年償却費 {yen(result.depreciation)}</small></h3>
+          <h3>固定資産（定額法）<small>当年償却費 {yen(result.depreciation)}</small></h3>
           <AssetTable assets={data.business.assets} onChange={(assets) => setBusiness({ assets })} taxYear={data.taxYear} />
-
-          <p className="summary">
-            売上 {yen(result.businessRevenue)} − 経費 {yen(result.businessExpenses)} − 減価償却 {yen(result.depreciation)}
-            − 青色控除 {yen(result.blueDeduction)} → 事業所得 <strong>{yen(result.businessIncome)}</strong>
-          </p>
         </section>
       )}
 
+      {/* ── 仕訳帳 ───────────────────────────────────────────────────────── */}
+      {tab === 'journal' && (
+        <section>
+          <h2>仕訳帳（複式簿記）</h2>
+          <p className="note">
+            1件以上入力すると複式簿記モードになり、仕訳帳から損益計算書・貸借対照表を生成します。
+            青色申告65万円控除（e-Tax提出）には複式簿記が必要です。
+          </p>
+          <label className="field">
+            <span>青色申告特別控除</span>
+            <select value={data.business.blueDeductionType} onChange={(e) => setBusiness({ blueDeductionType: Number(e.target.value) as BlueDeductionType })}>
+              <option value={65}>65万円（複式簿記＋e-Tax/電子帳簿）</option>
+              <option value={55}>55万円（複式簿記・書面提出）</option>
+              <option value={10}>10万円（簡易簿記）</option>
+            </select>
+          </label>
+
+          <div style={{ display: 'flex', gap: '1rem', marginBottom: '.5rem', flexWrap: 'wrap' }}>
+            <button onClick={() => {
+              const e: JournalEntry = {
+                id: newId(), date: `${data.taxYear}-01-01`, description: '',
+                lines: [
+                  { accountCode: '1010', debit: 0, credit: 0 },
+                  { accountCode: '4010', debit: 0, credit: 0 },
+                ],
+              };
+              setBusiness({ journal: [...data.business.journal, e] });
+            }}>＋ 仕訳を追加</button>
+            <label className="csv" style={{ margin: 0 }}>
+              仕訳CSV取込（日付,借方科目,借方金額,貸方科目,貸方金額[,摘要]）
+              <input type="file" accept=".csv,text/csv" onChange={importCsv('journal')} />
+            </label>
+            {data.business.journal.length > 0 && (
+              <button onClick={() => { if (confirm('仕訳帳をすべて削除しますか？')) setBusiness({ journal: [] }); }}
+                style={{ color: '#c0392b' }}>仕訳帳をクリア</button>
+            )}
+          </div>
+
+          {csvMessages.length > 0 && <ul className="messages">{csvMessages.map((m, i) => <li key={i}>{m}</li>)}</ul>}
+
+          <JournalTable
+            entries={data.business.journal}
+            onChange={(journal) => setBusiness({ journal })}
+          />
+
+          {data.business.journal.length > 0 && (
+            <p className="summary">
+              仕訳件数 {data.business.journal.length}件 ／
+              貸借不一致: {data.business.journal.filter((e) => !isBalanced(e)).length}件
+              {data.business.journal.filter((e) => !isBalanced(e)).length > 0 && (
+                <span style={{ color: '#c0392b' }}> ⚠ 確認してください</span>
+              )}
+            </p>
+          )}
+        </section>
+      )}
+
+      {/* ── 財務諸表 ─────────────────────────────────────────────────────── */}
+      {tab === 'financials' && (
+        <section>
+          <h2>財務諸表（仕訳帳から自動生成）</h2>
+          {!useJournal ? (
+            <p className="note">仕訳帳タブに仕訳を入力すると、損益計算書と貸借対照表が生成されます。</p>
+          ) : (
+            <>
+              <h3>損益計算書</h3>
+              <table className="result">
+                <tbody>
+                  <tr className="section-header"><td colSpan={2}>【収益】</td></tr>
+                  {pl.revenues.map(({ account, amount }) => (
+                    <tr key={account.code}><td>{account.plLabel ?? account.name}</td><td className="num">{yen(amount)}</td></tr>
+                  ))}
+                  <tr className="total"><td>収益合計</td><td className="num">{yen(pl.totalRevenue)}</td></tr>
+                  <tr className="section-header"><td colSpan={2}>【費用】</td></tr>
+                  {pl.expenses.map(({ account, amount }) => (
+                    <tr key={account.code}><td>{account.plLabel ?? account.name}</td><td className="num">{yen(amount)}</td></tr>
+                  ))}
+                  {result.depreciation > 0 && !pl.expenses.some((e) => e.account.code === '5120') && (
+                    <tr><td>減価償却費（資産台帳計算）</td><td className="num">{yen(result.depreciation)}</td></tr>
+                  )}
+                  <tr className="total"><td>費用合計</td><td className="num">{yen(pl.totalExpense)}</td></tr>
+                  <tr className="total"><td>差引利益（青色控除前）</td><td className="num">{yen(pl.netProfit)}</td></tr>
+                  <tr><td>青色申告特別控除</td><td className="num">−{yen(result.blueDeduction).slice(1)}</td></tr>
+                  <tr className="total"><td>事業所得</td><td className="num">{yen(result.businessIncome)}</td></tr>
+                </tbody>
+              </table>
+
+              <h3>貸借対照表（期末残高）</h3>
+              <div className="bs-grid">
+                <div>
+                  <strong>資産の部</strong>
+                  <table className="result"><tbody>
+                    {bs.assets.map(({ account, amount }) => (
+                      <tr key={account.code}><td>{account.bsLabel ?? account.name}</td><td className="num">{yen(amount)}</td></tr>
+                    ))}
+                    <tr className="total"><td>資産合計</td><td className="num">{yen(bs.totalAssets)}</td></tr>
+                  </tbody></table>
+                </div>
+                <div>
+                  <strong>負債・資本の部</strong>
+                  <table className="result"><tbody>
+                    {bs.liabilities.map(({ account, amount }) => (
+                      <tr key={account.code}><td>{account.bsLabel ?? account.name}</td><td className="num">{yen(amount)}</td></tr>
+                    ))}
+                    <tr className="total"><td>負債合計</td><td className="num">{yen(bs.totalLiabilities)}</td></tr>
+                    {bs.equities.map(({ account, amount }) => (
+                      <tr key={account.code}><td>{account.bsLabel ?? account.name}</td><td className="num">{yen(amount)}</td></tr>
+                    ))}
+                    <tr><td>当期純利益</td><td className="num">{yen(bs.retainedEarnings)}</td></tr>
+                    <tr className="total"><td>資本合計</td><td className="num">{yen(bs.totalEquity + bs.retainedEarnings)}</td></tr>
+                  </tbody></table>
+                  {Math.abs(bs.totalAssets - (bs.totalLiabilities + bs.totalEquity + bs.retainedEarnings)) > 1 && (
+                    <p style={{ color: '#c0392b', fontSize: '.85rem' }}>
+                      ⚠ 貸借が一致しません。仕訳を確認してください。
+                    </p>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </section>
+      )}
+
+      {/* ── 所得控除 ─────────────────────────────────────────────────────── */}
       {tab === 'deductions' && (
         <section>
           <h2>所得控除</h2>
@@ -213,7 +363,6 @@ export default function App() {
             <NumberField label="医療費の保険補填額" value={data.deductions.medicalReimbursed} onChange={(v) => setDed({ medicalReimbursed: v })} />
             <NumberField label="寄附金（ふるさと納税含む）" value={data.deductions.donations} onChange={(v) => setDed({ donations: v })} />
           </div>
-
           <h3>人的控除</h3>
           <div className="grid">
             <label className="field"><span>配偶者</span>
@@ -239,6 +388,7 @@ export default function App() {
         </section>
       )}
 
+      {/* ── 計算結果 ─────────────────────────────────────────────────────── */}
       {tab === 'result' && (
         <section>
           <h2>計算結果</h2>
@@ -261,12 +411,10 @@ export default function App() {
           </table>
 
           <h3>住民税（翌年度・概算）</h3>
-          <table className="result">
-            <tbody>
-              <tr><td>課税所得（住民税ベース）</td><td className="num">{yen(result.residentTaxableIncome)}</td></tr>
-              <tr className="total"><td>住民税 概算（所得割10%＋均等割）</td><td className="num">{yen(result.residentTax)}</td></tr>
-            </tbody>
-          </table>
+          <table className="result"><tbody>
+            <tr><td>課税所得（住民税ベース）</td><td className="num">{yen(result.residentTaxableIncome)}</td></tr>
+            <tr className="total"><td>住民税 概算（所得割10%＋均等割）</td><td className="num">{yen(result.residentTax)}</td></tr>
+          </tbody></table>
 
           <details>
             <summary>所得控除の内訳</summary>
@@ -287,19 +435,238 @@ export default function App() {
               ))}
             </tbody></table>
           </details>
-
           <p className="disclaimer">
-            ※ 本ツールは試算用です（令和7年分税制で計算・住民税や寄附金税額控除は簡略計算）。
+            ※ 本ツールは試算用です。住民税・寄附金税額控除は簡略計算。
             実際の申告は国税庁「確定申告書等作成コーナー」等でご確認ください。
-            予定納税・特定親族特別控除・障害者控除・住宅ローン控除などは未対応です。
           </p>
         </section>
+      )}
+
+      {/* ── e-Tax 入力ガイド ─────────────────────────────────────────────── */}
+      {tab === 'etax' && (
+        <EtaxGuide result={result} pl={pl} bs={bs} data={data} useJournal={useJournal} />
       )}
     </div>
   );
 }
 
-// ---- 汎用エントリ表 ----
+// ── e-Tax 入力ガイドコンポーネント ──────────────────────────────────────────
+
+function EtaxGuide({ result, pl, bs, data, useJournal }: {
+  result: ReturnType<typeof calculate>;
+  pl: ReturnType<typeof derivePL>;
+  bs: ReturnType<typeof deriveBS>;
+  data: AppData;
+  useJournal: boolean;
+}) {
+  const getPlAmt = (code: string) =>
+    [...pl.revenues, ...pl.expenses].find((x) => x.account.code === code)?.amount ?? 0;
+
+  const fields: { section: string; rows: { label: string; value: number | string; note?: string }[] }[] = [
+    {
+      section: '確定申告書B 第一表',
+      rows: [
+        { label: '⑥ 事業（営業等）', value: result.businessIncome, note: '事業所得欄' },
+        { label: '⑦ 給与', value: result.salaryIncome, note: '給与所得欄' },
+        { label: '⑫ 合計', value: result.totalIncome, note: '合計所得金額' },
+        { label: '㉔ 社会保険料控除', value: result.deductions.socialInsurance },
+        { label: '㉕ 小規模企業共済等掛金控除', value: result.deductions.smallBusinessMutualAid },
+        { label: '㉖ 生命保険料控除', value: result.deductions.lifeInsurance },
+        { label: '㉗ 地震保険料控除', value: result.deductions.earthquakeInsurance },
+        { label: '㉛ 医療費控除', value: result.deductions.medical },
+        { label: '㊱ 寄附金控除', value: result.deductions.donation },
+        { label: '㊲ 配偶者（特別）控除', value: result.deductions.spouse },
+        { label: '㊳ 扶養控除', value: result.deductions.dependents },
+        { label: '㊵ 基礎控除', value: result.deductions.basic },
+        { label: '㊶ 合計（所得から差し引かれる金額）', value: result.deductions.total },
+        { label: '㊷ 課税される所得金額', value: result.taxableIncome },
+        { label: '㊸ 上の㊷に対する税額', value: result.incomeTaxBase },
+        { label: '㊺ 復興特別所得税額', value: result.reconstructionTax },
+        { label: '㊻ 所得税及び復興特別所得税の額', value: result.incomeTaxTotal },
+        { label: '㊿ 源泉徴収税額', value: result.withheldTax },
+        { label: '納める税金 / 還付される税金', value: Math.abs(result.taxDue), note: result.taxDue >= 0 ? '納付' : '還付（マイナス）' },
+      ],
+    },
+    {
+      section: '青色申告決算書（損益計算書）',
+      rows: [
+        { label: '① 売上（収入）金額', value: getPlAmt('4010') || data.business.revenues.reduce((s, r) => s + r.amount, 0) },
+        { label: '② 仕入金額', value: getPlAmt('5020') },
+        { label: '給料賃金', value: getPlAmt('5100') },
+        { label: '外注工賃', value: getPlAmt('5110') },
+        { label: '減価償却費', value: result.depreciation || getPlAmt('5120') },
+        { label: '地代家賃', value: getPlAmt('5140') },
+        { label: '利子割引料', value: getPlAmt('5150') },
+        { label: '租税公課', value: getPlAmt('5160') },
+        { label: '水道光熱費', value: getPlAmt('5180') },
+        { label: '旅費交通費', value: getPlAmt('5190') },
+        { label: '通信費', value: getPlAmt('5200') },
+        { label: '広告宣伝費', value: getPlAmt('5210') },
+        { label: '接待交際費', value: getPlAmt('5220') },
+        { label: '損害保険料', value: getPlAmt('5230') },
+        { label: '修繕費', value: getPlAmt('5240') },
+        { label: '消耗品費', value: getPlAmt('5250') },
+        { label: '専従者給与', value: getPlAmt('5270') },
+        { label: '雑費', value: getPlAmt('5900') },
+        { label: '差引金額（青色控除前の利益）', value: pl.netProfit || result.businessIncome + result.blueDeduction },
+        { label: '青色申告特別控除額', value: result.blueDeduction },
+        { label: '所得金額（事業所得）', value: result.businessIncome },
+      ],
+    },
+    ...(useJournal ? [{
+      section: '青色申告決算書（貸借対照表）期末残高',
+      rows: [
+        ...bs.assets.map(({ account, amount }) => ({
+          label: account.bsLabel ?? account.name,
+          value: amount,
+        })),
+        { label: '資産合計', value: bs.totalAssets },
+        ...bs.liabilities.map(({ account, amount }) => ({
+          label: account.bsLabel ?? account.name,
+          value: amount,
+        })),
+        { label: '負債合計', value: bs.totalLiabilities },
+        ...bs.equities.map(({ account, amount }) => ({
+          label: account.bsLabel ?? account.name,
+          value: amount,
+        })),
+        { label: '当期純利益', value: bs.retainedEarnings },
+      ],
+    }] : []),
+  ];
+
+  return (
+    <section>
+      <h2>e-Tax 入力ガイド</h2>
+      <p className="note">
+        e-Taxの「確定申告書等作成コーナー」に入力する際の数値一覧です。
+        e-Taxソフトウェア上の欄番号と照合しながらご利用ください。
+      </p>
+      {fields.map(({ section, rows }) => (
+        <div key={section}>
+          <h3>{section}</h3>
+          <table className="result etax">
+            <tbody>
+              {rows.map(({ label, value, note }) => (
+                typeof value === 'number' && value === 0 ? null : (
+                  <tr key={label}>
+                    <td>{label}</td>
+                    <td className="num">{typeof value === 'number' ? yen(value) : value}</td>
+                    {note && <td className="note-col">{note}</td>}
+                  </tr>
+                )
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
+      <p className="disclaimer">
+        ※ 欄番号は令和7年分の様式に基づきます。実際の入力時は国税庁の手引きと照合してください。
+        住宅ローン控除・予定納税・第三表（分離課税）などには非対応です。
+      </p>
+    </section>
+  );
+}
+
+// ── 仕訳帳テーブル ───────────────────────────────────────────────────────────
+
+const ACCOUNT_OPTIONS = ACCOUNTS.filter((a) => a.type !== '資本' || true).map((a) => (
+  <option key={a.code} value={a.code}>[{a.code}] {a.name}（{a.type}）</option>
+));
+
+function JournalTable({ entries, onChange }: {
+  entries: JournalEntry[]; onChange: (e: JournalEntry[]) => void;
+}) {
+  const updateEntry = (id: string, p: Partial<JournalEntry>) =>
+    onChange(entries.map((e) => (e.id === id ? { ...e, ...p } : e)));
+  const updateLine = (entryId: string, lineIdx: number, p: Partial<{ accountCode: string; debit: number; credit: number }>) =>
+    onChange(entries.map((e) => {
+      if (e.id !== entryId) return e;
+      const lines = e.lines.map((l, i) => i === lineIdx ? { ...l, ...p } : l);
+      return { ...e, lines };
+    }));
+  const addLine = (entryId: string) =>
+    onChange(entries.map((e) =>
+      e.id === entryId ? { ...e, lines: [...e.lines, { accountCode: '5900', debit: 0, credit: 0 }] } : e,
+    ));
+  const removeLine = (entryId: string, lineIdx: number) =>
+    onChange(entries.map((e) =>
+      e.id === entryId ? { ...e, lines: e.lines.filter((_, i) => i !== lineIdx) } : e,
+    ));
+
+  if (entries.length === 0) {
+    return <p className="note">仕訳がありません。「＋ 仕訳を追加」またはCSV取込でデータを入力してください。</p>;
+  }
+
+  return (
+    <div>
+      {entries.map((entry) => {
+        const balanced = isBalanced(entry);
+        return (
+          <div key={entry.id} className={`journal-entry ${balanced ? '' : 'unbalanced'}`}>
+            <div className="journal-header">
+              <input type="date" value={entry.date} onChange={(e) => updateEntry(entry.id, { date: e.target.value })} />
+              <input type="text" placeholder="摘要" value={entry.description}
+                onChange={(e) => updateEntry(entry.id, { description: e.target.value })}
+                style={{ flex: 1 }} />
+              {!balanced && <span className="badge-error">貸借不一致</span>}
+              <button className="del" onClick={() => onChange(entries.filter((e) => e.id !== entry.id))}>×</button>
+            </div>
+            <table className="journal-lines">
+              <thead><tr><th>借方科目</th><th>借方金額</th><th>貸方科目</th><th>貸方金額</th><th /></tr></thead>
+              <tbody>
+                {entry.lines.map((line, li) => {
+                  return (
+                    <tr key={li}>
+                      <td>
+                        <select value={line.accountCode}
+                          onChange={(e) => updateLine(entry.id, li, { accountCode: e.target.value })}>
+                          {ACCOUNT_OPTIONS}
+                        </select>
+                      </td>
+                      <td>
+                        <input type="text" inputMode="numeric" className="num" placeholder="0"
+                          value={line.debit === 0 ? '' : line.debit.toLocaleString('ja-JP')}
+                          onChange={(e) => {
+                            const n = Number(e.target.value.replace(/[,，¥\s]/g, ''));
+                            if (!isNaN(n)) updateLine(entry.id, li, { debit: n });
+                          }} />
+                      </td>
+                      <td>
+                        <select value={line.accountCode}
+                          onChange={(e) => updateLine(entry.id, li, { accountCode: e.target.value })}>
+                          {ACCOUNT_OPTIONS}
+                        </select>
+                      </td>
+                      <td>
+                        <input type="text" inputMode="numeric" className="num" placeholder="0"
+                          value={line.credit === 0 ? '' : line.credit.toLocaleString('ja-JP')}
+                          onChange={(e) => {
+                            const n = Number(e.target.value.replace(/[,，¥\s]/g, ''));
+                            if (!isNaN(n)) updateLine(entry.id, li, { credit: n });
+                          }} />
+                      </td>
+                      <td>
+                        {entry.lines.length > 2 && (
+                          <button className="del" onClick={() => removeLine(entry.id, li)}>×</button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <button onClick={() => addLine(entry.id)} style={{ fontSize: '.8rem', marginTop: '.25rem' }}>
+              ＋ 行を追加（複合仕訳）
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── 汎用エントリ表 ───────────────────────────────────────────────────────────
 
 interface Column<T> {
   key: keyof T & string;

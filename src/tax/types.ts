@@ -1,4 +1,5 @@
 // 確定申告計算エンジンの型定義（令和7年分以降の税制を想定）
+import type { JournalEntry } from './journal';
 
 export type ExpenseCategory =
   | '仕入'
@@ -55,7 +56,13 @@ export interface BusinessInput {
   expenses: ExpenseEntry[];
   assets: FixedAsset[];
   blueDeductionType: BlueDeductionType;
+  /** 複式簿記モードの仕訳帳。1件以上あればこちらで事業所得を計算 */
+  journal: JournalEntry[];
+  /** 青色専従者給与（仕訳帳に含める場合は0） */
+  dedicatedSpouseWage: number;
 }
+
+export type { JournalEntry };
 
 export interface SalaryInput {
   /** 給与収入（源泉徴収票の「支払金額」） */

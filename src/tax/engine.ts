@@ -5,6 +5,7 @@ import type {
   BusinessInput, SalaryInput, DeductionInput, DeductionBreakdown,
   TaxResult, FixedAsset,
 } from './types';
+import { derivePL } from './journal';
 
 const floorTo = (n: number, unit: number) => Math.floor(n / unit) * unit;
 
@@ -59,13 +60,33 @@ export interface BusinessResult {
 }
 
 export function businessIncome(input: BusinessInput, taxYear: number): BusinessResult {
-  const revenue = input.revenues.reduce((s, r) => s + r.amount, 0);
-  const expenses = input.expenses.reduce((s, e) => s + e.amount, 0);
   const depreciation = input.assets.reduce((s, a) => s + depreciationForYear(a, taxYear), 0);
-  const profit = revenue - expenses - depreciation;
-  // 青色申告特別控除は事業所得の黒字を限度に適用
+
+  let revenue: number;
+  let expenses: number;
+
+  if (input.journal.length > 0) {
+    // 複式簿記モード: 仕訳帳から損益を導出
+    const pl = derivePL(input.journal);
+    revenue = pl.totalRevenue;
+    // 費用合計 + 資産テーブルの減価償却費（仕訳帳に計上済みの場合は二重計上に注意）
+    expenses = pl.totalExpense;
+    // 仕訳帳に減価償却費が含まれていない場合のみ加算
+    const hasDeprInJournal = pl.expenses.some((e) => e.account.code === '5120');
+    if (!hasDeprInJournal) expenses += depreciation;
+  } else {
+    // 簡易モード: 売上・経費リストから計算
+    revenue = input.revenues.reduce((s, r) => s + r.amount, 0);
+    expenses = input.expenses.reduce((s, e) => s + e.amount, 0) + depreciation;
+  }
+
+  const profit = revenue - expenses;
   const blueDeduction = Math.max(0, Math.min(input.blueDeductionType * 10_000, profit));
-  return { revenue, expenses, depreciation, profit, income: profit - blueDeduction, blueDeduction };
+  // expensesフィールドは減価償却を除いた経費小計（UIで別掲するため）
+  const expensesWithoutDepr = input.journal.length > 0
+    ? expenses - (input.journal.some((e) => e.lines.some((l) => l.accountCode === '5120')) ? 0 : depreciation)
+    : expenses - depreciation;
+  return { revenue, expenses: expensesWithoutDepr, depreciation, profit, income: profit - blueDeduction, blueDeduction };
 }
 
 /** 基礎控除（令和7・8年分: 上乗せ特例込み） */

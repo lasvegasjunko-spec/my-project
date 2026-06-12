@@ -5,16 +5,21 @@
 
 body { margin: 0; background: #f5f6f8; color: #1a1a2e; }
 
-.app { max-width: 880px; margin: 0 auto; padding: 1rem 1.25rem 4rem; }
+.app { max-width: 960px; margin: 0 auto; padding: 1rem 1.25rem 4rem; }
 
 header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
-header h1 { font-size: 1.4rem; }
+header h1 { font-size: 1.4rem; margin: .5rem 0; }
 .year select { margin-left: .5rem; }
 
-.tabs { display: flex; gap: .25rem; margin: 1rem 0; border-bottom: 2px solid #d6d9e0; }
+.mode-badge {
+  display: inline-block; background: #1d6b3e; color: #fff;
+  font-size: .82rem; padding: .25rem .75rem; border-radius: 99px; margin: .25rem 0;
+}
+
+.tabs { display: flex; gap: .15rem; margin: .75rem 0; border-bottom: 2px solid #d6d9e0; flex-wrap: wrap; }
 .tabs button {
-  border: none; background: none; padding: .6rem 1rem; font-size: 1rem;
-  cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;
+  border: none; background: none; padding: .55rem .85rem; font-size: .92rem;
+  cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap;
 }
 .tabs button.active { border-bottom-color: #2b6cb0; color: #2b6cb0; font-weight: 700; }
 
@@ -23,34 +28,65 @@ h2 { margin-top: 0; font-size: 1.15rem; }
 h3 { margin: 1.5rem 0 .5rem; font-size: 1rem; }
 h3 small { font-weight: 400; color: #555; margin-left: .5rem; }
 
+.note { font-size: .85rem; color: #555; background: #f8f9fb; border-left: 3px solid #b0b8c8; padding: .5rem .8rem; border-radius: 0 6px 6px 0; margin: .5rem 0 1rem; }
+
 .field { display: flex; flex-direction: column; gap: .25rem; margin: .6rem 0; }
 .field span { font-size: .85rem; color: #444; }
 .field small { color: #888; }
-.field input, .field select { padding: .45rem .6rem; border: 1px solid #c4c9d4; border-radius: 6px; font-size: 1rem; }
+.field input, .field select, select { padding: .45rem .6rem; border: 1px solid #c4c9d4; border-radius: 6px; font-size: 1rem; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 1.25rem; }
 
 .summary { background: #eef4fb; border-radius: 8px; padding: .7rem 1rem; margin-top: 1rem; }
 
+/* 通常エントリテーブル */
 table.entries { width: 100%; border-collapse: collapse; margin-bottom: .5rem; }
 table.entries th { text-align: left; font-size: .8rem; color: #666; padding: .25rem .35rem; }
 table.entries td { padding: .15rem .35rem; }
-table.entries input, table.entries select { width: 100%; box-sizing: border-box; padding: .35rem .5rem; border: 1px solid #d4d8e0; border-radius: 5px; }
+table.entries input, table.entries select { width: 100%; box-sizing: border-box; padding: .35rem .5rem; border: 1px solid #d4d8e0; border-radius: 5px; font-size: .9rem; }
 table.entries input.num { text-align: right; }
-button.del { border: none; background: none; color: #c0392b; font-size: 1.1rem; cursor: pointer; }
+button.del { border: none; background: none; color: #c0392b; font-size: 1.1rem; cursor: pointer; padding: 0 .3rem; }
 
-.csv { display: block; margin: .5rem 0 1rem; font-size: .85rem; color: #555; }
+.csv { display: block; margin: .5rem 0 1rem; font-size: .85rem; color: #555; cursor: pointer; }
 .messages { font-size: .85rem; color: #7a5c00; background: #fff8e1; border-radius: 6px; padding: .5rem 1.5rem; }
 
+/* 仕訳帳 */
+.journal-entry {
+  border: 1px solid #d4d8e0; border-radius: 8px; padding: .75rem; margin-bottom: .75rem;
+}
+.journal-entry.unbalanced { border-color: #e74c3c; background: #fff5f5; }
+.journal-header { display: flex; gap: .5rem; align-items: center; margin-bottom: .5rem; flex-wrap: wrap; }
+.journal-header input[type="date"] { width: 9rem; }
+.badge-error { background: #e74c3c; color: #fff; font-size: .75rem; padding: .15rem .5rem; border-radius: 99px; white-space: nowrap; }
+
+table.journal-lines { width: 100%; border-collapse: collapse; }
+table.journal-lines th { font-size: .78rem; color: #666; padding: .2rem .3rem; text-align: left; }
+table.journal-lines td { padding: .15rem .3rem; }
+table.journal-lines select { width: 100%; box-sizing: border-box; padding: .3rem .4rem; border: 1px solid #d4d8e0; border-radius: 5px; font-size: .82rem; }
+table.journal-lines input { width: 100%; box-sizing: border-box; padding: .3rem .5rem; border: 1px solid #d4d8e0; border-radius: 5px; font-size: .9rem; }
+table.journal-lines input.num { text-align: right; }
+
+/* 財務諸表 */
+.bs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 600px) { .bs-grid { grid-template-columns: 1fr; } }
+
+/* 結果テーブル */
 table.result, table.breakdown { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; }
-table.result td, table.breakdown td { padding: .45rem .5rem; border-bottom: 1px solid #eceef2; }
+table.result td, table.breakdown td { padding: .45rem .5rem; border-bottom: 1px solid #eceef2; font-size: .95rem; }
 td.num { text-align: right; font-variant-numeric: tabular-nums; }
-tr.total td { font-weight: 700; border-top: 2px solid #2b6cb0; }
+td.note-col { font-size: .78rem; color: #888; }
+tr.total td { font-weight: 700; border-top: 2px solid #2b6cb0; border-bottom-color: #2b6cb0; }
+tr.section-header td { background: #f1f4f9; font-size: .82rem; color: #555; padding: .3rem .5rem; }
 tr.refund td { color: #1d7a3e; }
 tr.due td { color: #b23b3b; }
+
+/* e-Tax テーブル */
+table.etax td:first-child { font-size: .88rem; }
 
 .disclaimer { font-size: .8rem; color: #888; line-height: 1.6; }
 
 section button:not(.del) {
-  padding: .4rem .9rem; border: 1px solid #c4c9d4; background: #fff; border-radius: 6px; cursor: pointer;
+  padding: .4rem .9rem; border: 1px solid #c4c9d4; background: #fff; border-radius: 6px;
+  cursor: pointer; font-size: .9rem;
 }
+section button:not(.del):hover { background: #f1f4f9; }
