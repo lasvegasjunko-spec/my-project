@@ -1,4 +1,6 @@
 """ffmpeg を使った音声伸長と動画レンダリング。"""
+from __future__ import annotations
+
 import subprocess
 from pathlib import Path
 

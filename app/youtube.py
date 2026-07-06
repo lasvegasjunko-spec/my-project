@@ -1,4 +1,6 @@
 """YouTube Data API v3 連携 — OAuth2 認証・動画アップロード・予約投稿。"""
+from __future__ import annotations
+
 import json
 import os
 import pickle
